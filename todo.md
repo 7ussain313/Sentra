@@ -77,7 +77,7 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Repository
 
-- [ ] Create the GitHub repository.
+- [x] Create the GitHub repository.
 - [x] Create `.gitignore` (Python, Odoo filestore, `.env`, volumes).
 - [x] Create `.env.example`.
 - [x] Create a `README.md` placeholder.
@@ -85,10 +85,10 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### ✅ Done When
 
-- [ ] `docker compose up` starts all services without errors.
-- [ ] Odoo is reachable in the browser and a database is created.
-- [ ] The agent service `/health` endpoint responds.
-- [ ] The web UI loads at `/ui` and asks for a login.
+- [x] `docker compose up` starts all services without errors.
+- [x] Odoo is reachable in the browser and a database is created.
+- [x] The agent service `/health` endpoint responds.
+- [x] The web UI loads at `/ui` and asks for a login.
 - [x] Git repository is ready.
 
 ---
