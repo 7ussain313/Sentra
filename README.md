@@ -28,3 +28,20 @@ docker compose exec -T odoo sh -c 'odoo shell -c /tmp/odoo.conf -d sentra --no-h
 The script is idempotent. Passwords for the `manager`, `staff` and `sentra_agent`
 users and the agent's API key are generated and printed **once** on first run;
 store them in `.env` (`SEED_*_PASSWORD`, `ODOO_AGENT_API_KEY`).
+
+## Monitoring
+
+```bash
+sh scripts/create_monitor_role.sh   # one-time: least-privilege role for postgres_exporter
+docker compose up -d
+```
+
+| URL | What |
+|-----|------|
+| http://localhost:3000 | Grafana (`admin` / `GRAFANA_ADMIN_PASSWORD`), dashboards in the *Sentra* folder |
+| http://localhost:9090 | Prometheus (localhost only) |
+| http://localhost:9093 | Alertmanager (localhost only) |
+
+Alerts (`OdooDown`, `OdooHighLatency`, `PostgresConnectionsHigh`, `ContainerMemoryHigh`)
+are posted by Alertmanager to `POST /webhook/alertmanager` on the agent service.
+Received alerts are listed at `GET /alerts` and appended to `audit/alerts.jsonl`.

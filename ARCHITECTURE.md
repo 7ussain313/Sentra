@@ -70,8 +70,10 @@ All services share one network, `sentra_net`.
 | `alertmanager` | prom/alertmanager | 9093 | prometheus | Webhook to `agents` |
 | `blackbox` | prom/blackbox-exporter | — | — | Probes `odoo:8069` |
 | `postgres_exporter` | prometheuscommunity/postgres-exporter | — | db | |
-| `cadvisor` | gcr.io/cadvisor/cadvisor | — | — | Container CPU/memory/restarts |
+| `cadvisor` | gcr.io/cadvisor/cadvisor | — | — | Host/cgroup metrics; per-container series only where cAdvisor can identify containers (Linux) |
 | `grafana` | grafana/grafana | 3000 | prometheus | Provisioned datasource + dashboards |
+
+Container metrics with real names come from the `agents` service (`GET /metrics`, Docker socket, Basic auth, scraped as job `containers`), because cAdvisor cannot resolve container names on every host (for example Docker Desktop with the containerd image store). The `ContainerMemoryHigh` alert and the container dashboard use it. `postgres_exporter` connects as the least-privilege `sentra_monitor` role (`pg_monitor`), created by `scripts/create_monitor_role.sh`. Prometheus and Alertmanager are bound to `127.0.0.1` only.
 
 The web UI is served by the `agents` service at `http://localhost:8000/ui`. Only Odoo, Grafana, and the agent service (UI + `/health`) are exposed to the host; the rest are internal.
 

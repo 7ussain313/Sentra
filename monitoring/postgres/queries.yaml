@@ -1,0 +1,19 @@
+pg_long_running:
+  query: |
+    SELECT COALESCE(MAX(EXTRACT(EPOCH FROM (now() - query_start))), 0) AS max_seconds
+    FROM pg_stat_activity
+    WHERE state = 'active' AND pid <> pg_backend_pid()
+  metrics:
+    - max_seconds:
+        usage: "GAUGE"
+        description: "Age in seconds of the longest-running active query"
+
+pg_idle_in_transaction:
+  query: |
+    SELECT COALESCE(MAX(EXTRACT(EPOCH FROM (now() - state_change))), 0) AS max_seconds
+    FROM pg_stat_activity
+    WHERE state = 'idle in transaction'
+  metrics:
+    - max_seconds:
+        usage: "GAUGE"
+        description: "Age in seconds of the oldest idle-in-transaction session"

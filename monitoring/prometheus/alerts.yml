@@ -1,0 +1,40 @@
+groups:
+  - name: sentra
+    rules:
+      - alert: OdooDown
+        expr: probe_success{job="odoo-health"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Odoo is not answering HTTP health checks"
+          description: "The probe of {{ $labels.instance }} has failed for more than 1 minute."
+
+      - alert: OdooHighLatency
+        expr: probe_duration_seconds{job="odoo-login"} > 2 and probe_success{job="odoo-login"} == 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Odoo is slow"
+          description: "Loading the login page takes {{ $value | humanizeDuration }} (threshold 2s)."
+
+      - alert: PostgresConnectionsHigh
+        expr: sum(pg_stat_activity_count) / max(pg_settings_max_connections) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL connections are close to the limit"
+          description: "{{ $value | humanizePercentage }} of max_connections is in use."
+
+      # Source: the agent service's Docker-socket exporter (job "containers"),
+      # which carries real container names on every host.
+      - alert: ContainerMemoryHigh
+        expr: sentra_container_memory_bytes > 1.5e9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} uses a lot of memory"
+          description: "{{ $labels.name }} working set is {{ $value | humanize1024 }}B (threshold 1.5GiB)."

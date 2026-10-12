@@ -195,35 +195,35 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Metrics
 
-- [ ] Add Prometheus to Docker Compose.
-- [ ] Add Blackbox Exporter (Odoo HTTP uptime and response time).
-- [ ] Add postgres_exporter (connections, database size, slow queries).
-- [ ] Add cAdvisor (container CPU, memory, restarts).
-- [ ] Configure Prometheus scrape targets.
+- [x] Add Prometheus to Docker Compose.
+- [x] Add Blackbox Exporter (Odoo HTTP uptime and response time).
+- [x] Add postgres_exporter (connections, database size, slow queries).
+- [x] Add cAdvisor (container CPU, memory, restarts).
+- [x] Configure Prometheus scrape targets.
 
 ### Module: Dashboards
 
-- [ ] Add Grafana to Docker Compose.
-- [ ] Connect Prometheus as a data source.
-- [ ] Build an Odoo health dashboard (uptime, response time, error rate).
-- [ ] Build a database dashboard.
-- [ ] Build a container dashboard.
-- [ ] Export dashboards as JSON into the repo.
+- [x] Add Grafana to Docker Compose.
+- [x] Connect Prometheus as a data source.
+- [x] Build an Odoo health dashboard (uptime, response time, error rate).
+- [x] Build a database dashboard.
+- [x] Build a container dashboard.
+- [x] Export dashboards as JSON into the repo.
 
 ### Module: Alerts
 
-- [ ] Add Alertmanager to Docker Compose.
-- [ ] Alert: Odoo is down.
-- [ ] Alert: Odoo response time is too high.
-- [ ] Alert: PostgreSQL connections near the limit.
-- [ ] Alert: container memory too high.
-- [ ] Route all alerts to the agent service webhook.
+- [x] Add Alertmanager to Docker Compose.
+- [x] Alert: Odoo is down.
+- [x] Alert: Odoo response time is too high.
+- [x] Alert: PostgreSQL connections near the limit.
+- [x] Alert: container memory too high.
+- [x] Route all alerts to the agent service webhook.
 
 ### ✅ Done When
 
-- [ ] All dashboards show live data.
-- [ ] Stopping the Odoo container triggers an alert.
-- [ ] The agent service receives the alert payload.
+- [x] All dashboards show live data.
+- [x] Stopping the Odoo container triggers an alert.
+- [x] The agent service receives the alert payload.
 
 ---
 

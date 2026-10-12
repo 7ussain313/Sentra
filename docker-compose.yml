@@ -47,6 +47,7 @@ services:
     env_file: .env
     depends_on:
       - odoo
+      - prometheus
     ports:
       - "${AGENT_PORT}:8000"
     volumes:
@@ -55,9 +56,100 @@ services:
       - ./audit:/app/audit
     networks: [sentra_net]
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+    environment:
+      UI_USERNAME: ${UI_USERNAME}
+      UI_PASSWORD: ${UI_PASSWORD}
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.tmpl.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        printf '%s' "$$UI_PASSWORD" > /tmp/agent_password &&
+        sed "s|__UI_USERNAME__|$$UI_USERNAME|" /etc/prometheus/prometheus.tmpl.yml > /tmp/prometheus.yml &&
+        exec /bin/prometheus --config.file=/tmp/prometheus.yml --storage.tsdb.path=/prometheus
+    networks: [sentra_net]
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9093:9093"
+    environment:
+      UI_USERNAME: ${UI_USERNAME}
+      UI_PASSWORD: ${UI_PASSWORD}
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.tmpl.yml:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        printf '%s' "$$UI_PASSWORD" > /tmp/webhook_password &&
+        sed "s|__UI_USERNAME__|$$UI_USERNAME|" /etc/alertmanager/alertmanager.tmpl.yml > /tmp/alertmanager.yml &&
+        exec /bin/alertmanager --config.file=/tmp/alertmanager.yml --storage.path=/alertmanager
+    networks: [sentra_net]
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    restart: unless-stopped
+    command: ["--config.file=/etc/blackbox/blackbox.yml"]
+    volumes:
+      - ./monitoring/blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    networks: [sentra_net]
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://sentra_monitor:${MONITOR_DB_PASSWORD}@db:5432/postgres?sslmode=disable
+      PG_EXPORTER_EXTEND_QUERY_PATH: /etc/postgres_exporter/queries.yaml
+    volumes:
+      - ./monitoring/postgres/queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    networks: [sentra_net]
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks: [sentra_net]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks: [sentra_net]
+
 volumes:
   pgdata:
   odoo-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
   sentra_net:
