@@ -97,36 +97,36 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Module Skeleton
 
-- [ ] Create `odoo/addons/carwash/`.
-- [ ] Create `__manifest__.py` (name, version, depends: `base`, `sale`, `account`).
-- [ ] Create `__init__.py` files.
-- [ ] Install the module from Odoo Apps.
+- [x] Create `odoo/addons/carwash/`.
+- [x] Create `__manifest__.py` (name, version, depends: `base`, `sale`, `account`).
+- [x] Create `__init__.py` files.
+- [x] Install the module from Odoo Apps.
 
 ### Module: Models
 
-- [ ] `carwash.service` (name, price, duration, active).
-- [ ] `carwash.vehicle` (plate number, make, model, owner).
-- [ ] `carwash.booking` (customer, vehicle, service, scheduled date, price, state, invoice).
+- [x] `carwash.service` (name, price, duration, active).
+- [x] `carwash.vehicle` (plate number, make, model, owner).
+- [x] `carwash.booking` (customer, vehicle, service, scheduled date, price, state, invoice).
 
 ### Module: Relationships
 
-- [ ] Customer (`res.partner`) ↔ Vehicles
-- [ ] Customer ↔ Bookings
-- [ ] Vehicle ↔ Bookings
-- [ ] Service ↔ Bookings
-- [ ] Booking ↔ Invoice (`account.move`)
+- [x] Customer (`res.partner`) ↔ Vehicles
+- [x] Customer ↔ Bookings
+- [x] Vehicle ↔ Bookings
+- [x] Service ↔ Bookings
+- [x] Booking ↔ Invoice (`account.move`)
 
 ### Module: Constraints
 
-- [ ] Plate number must be unique.
-- [ ] Scheduled date cannot be in the past.
-- [ ] Price is computed from the service but can be overridden by a Manager.
+- [x] Plate number must be unique.
+- [x] Scheduled date cannot be in the past.
+- [x] Price is computed from the service and stored, editable field (Manager-only enforcement lands with the security groups in Phase 3).
 
 ### ✅ Done When
 
-- [ ] Module installs and upgrades without errors.
-- [ ] All models appear in Odoo with the correct fields.
-- [ ] Relationships work in both directions.
+- [x] Module installs and upgrades without errors.
+- [x] All models appear in Odoo with the correct fields.
+- [x] Relationships work in both directions.
 
 ---
 
