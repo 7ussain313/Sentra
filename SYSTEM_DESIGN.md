@@ -7,7 +7,7 @@ An AI SRE platform for Odoo, demonstrated on a car wash business.
 ## 1. Scope
 
 ### 1.1 Problem
-Small businesses running Odoo have no on-call engineer. When Odoo or its database breaks, nobody notices until customers complain. Sentra watches the stack, diagnoses incidents with an AI agent, and asks a human to approve any fix over Telegram. A second agent answers business questions from Odoo data.
+Small businesses running Odoo have no on-call engineer. When Odoo or its database breaks, nobody notices until customers complain. Sentra watches the stack, diagnoses incidents with an AI agent, and asks a human to approve any fix in a web UI. A second agent answers business questions from Odoo data.
 
 ### 1.2 Functional requirements
 
@@ -18,9 +18,9 @@ Small businesses running Odoo have no on-call engineer. When Odoo or its databas
 | F3 | Prometheus + Grafana monitor Odoo uptime/latency, PostgreSQL, and containers. |
 | F4 | Alertmanager sends alerts to the SRE agent via webhook. |
 | F5 | The SRE agent investigates with read-only tools and produces a diagnosis. |
-| F6 | The SRE agent proposes a fix; action tools run only after human approval in Telegram. |
+| F6 | The SRE agent proposes a fix; action tools run only after human approval in the web UI. |
 | F7 | The SRE agent writes a Markdown postmortem for every incident. |
-| F8 | The Business agent answers read-only questions about revenue, invoices, bookings, customers, and services via `/ask`. |
+| F8 | The Business agent answers read-only questions about revenue, invoices, bookings, customers, and services via the web UI's Ask page. |
 | F9 | Every tool call and approval decision is written to an audit log. |
 
 ### 1.3 Out of scope
@@ -34,7 +34,7 @@ Small businesses running Odoo have no on-call engineer. When Odoo or its databas
 
 ### 1.4 Assumptions
 * Single host running Docker Compose; the agent has access to the Docker socket.
-* One operator (the owner) with one Telegram account.
+* One operator (the owner) with one browser login (HTTP Basic auth).
 * Odoo 17 Community, PostgreSQL 15.
 * One company, one currency, one branch.
 * LLM access via the Anthropic API (key in `.env`).
@@ -44,10 +44,10 @@ Small businesses running Odoo have no on-call engineer. When Odoo or its databas
 * Alert storm: duplicate alerts for the same incident are deduplicated by alert name + 10-minute window.
 * Odoo down means the Business agent cannot answer; it says so rather than guessing.
 * Approval never arrives: the action times out after 10 minutes and is cancelled.
-* LLM API unavailable: send the raw alert to Telegram with "agent unavailable".
+* LLM API unavailable: show the raw alert in the web UI with "agent unavailable".
 * Agent hits the step limit without a diagnosis: report evidence gathered so far and escalate to the human.
 * Agent proposes an action on a service outside the allowlist: rejected before it reaches the human.
-* Telegram message from an unknown user ID: ignored and logged.
+* Unauthenticated web UI request: rejected with 401 and logged.
 * Booking scheduled in the past, duplicate plate number, or invoice creation failure: rejected with a clear error; the booking stays in its current state.
 
 ---
@@ -170,7 +170,7 @@ Anything outside this set is attempted only with read-only `odoo_search`; if the
 | ERP | Odoo 17 Community | Real ERP, realistic failure modes, custom module demonstrates domain work. |
 | LLM | Anthropic API with tool calling | Native tool-use loop, no framework needed. |
 | Agent service | FastAPI (Python) | Webhook receiver + small API. |
-| Human interface | Telegram bot with inline buttons | Simple approval flow, works on a phone. |
+| Human interface | Web UI served by the agent service (`/ui`) | No external accounts, self-contained demo, live incident view with Approve/Reject buttons. |
 | Monitoring | Prometheus, Alertmanager, Grafana, Blackbox, postgres_exporter, cAdvisor | Standard stack; every alert has a concrete source. |
 | Safety model | Read tools free, action tools gated by human approval | Least privilege; no unattended changes. |
 

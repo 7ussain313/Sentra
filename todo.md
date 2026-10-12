@@ -2,7 +2,7 @@
 
 **An AI SRE platform for Odoo, demonstrated on a car wash business.**
 
-Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agents (SRE agent and Business agent) operated through Telegram with human approval.
+Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agents (SRE agent and Business agent) operated through a web UI with human approval.
 
 ---
 
@@ -37,7 +37,7 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 - [x] Define the agent tool layer and each tool's inputs/outputs.
 - [x] Classify every tool as **read-only** or **action** (requires approval).
 - [x] Define the agent reasoning loop and its stop conditions.
-- [x] Define the human-approval flow (Telegram).
+- [x] Define the human-approval flow (Web UI).
 - [x] Define how agents authenticate to Odoo (dedicated API user, least privilege).
 - [x] Define secrets management (`.env`, never committed).
 - [x] Define the testing strategy.
@@ -70,11 +70,10 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 - [x] Create a FastAPI app with a `/health` endpoint.
 - [x] Add the agent service to Docker Compose.
 
-### Module: Telegram Bot
+### Module: Web UI
 
-- [ ] Create a bot with BotFather and store the token in `.env`.
-- [x] Create the `telegram_bot/` service.
-- [x] Restrict the bot to your own Telegram user ID.
+- [x] Serve a web UI shell from the agent service at `/ui`.
+- [x] Protect the UI and API with HTTP Basic auth (`UI_USERNAME`, `UI_PASSWORD` in `.env`).
 
 ### Module: Repository
 
@@ -89,7 +88,7 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 - [ ] `docker compose up` starts all services without errors.
 - [ ] Odoo is reachable in the browser and a database is created.
 - [ ] The agent service `/health` endpoint responds.
-- [ ] The Telegram bot replies to a test message.
+- [ ] The web UI loads at `/ui` and asks for a login.
 - [x] Git repository is ready.
 
 ---
@@ -291,13 +290,13 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ---
 
-## 📌 Phase 8 – Telegram & Human Approval
+## 📌 Phase 8 – Web UI & Human Approval
 
 ### Module: Notifications
 
-- [ ] Send an alert message when an incident starts.
-- [ ] Send the agent's diagnosis and proposed fix.
-- [ ] Send the final postmortem summary.
+- [ ] Show new incidents in a live incident list.
+- [ ] Show the agent's steps, diagnosis, and proposed fix on the incident page.
+- [ ] Show the final postmortem on the incident page.
 
 ### Module: Approval Flow
 
@@ -308,7 +307,7 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### ✅ Done When
 
-- [ ] The full incident flow works end to end from Telegram.
+- [ ] The full incident flow works end to end from the web UI.
 - [ ] Rejected actions never run.
 
 ---
@@ -319,7 +318,7 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 - [ ] Define the system prompt (business assistant, read-only).
 - [ ] Reuse the read-only Odoo tools.
-- [ ] Connect to Telegram (e.g., a `/ask` command).
+- [ ] Add an Ask page to the web UI.
 
 ### Module: Supported Questions
 
@@ -379,7 +378,7 @@ For each scenario, record: alert fired, agent diagnosis, action taken, time to r
 
 - [ ] Complete `README.md` (problem, solution, features, tech stack, setup steps).
 - [ ] Add an architecture diagram.
-- [ ] Add screenshots (Odoo module, Grafana dashboards, Telegram flow).
+- [ ] Add screenshots (Odoo module, Grafana dashboards, web UI approval flow).
 - [ ] Document known limitations and future improvements.
 
 ### Module: Demo
@@ -387,7 +386,7 @@ For each scenario, record: alert fired, agent diagnosis, action taken, time to r
 - [ ] Record a 2–3 minute demo video:
   1. Show the Odoo car wash module.
   2. Break Odoo on purpose.
-  3. Show the alert and the agent's diagnosis in Telegram.
+  3. Show the alert and the agent's diagnosis in the web UI.
   4. Approve the fix and show recovery.
   5. Ask the Business agent a question.
 - [ ] Add the video link to the README.

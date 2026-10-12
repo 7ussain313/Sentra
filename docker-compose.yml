@@ -49,16 +49,6 @@ services:
       - ./audit:/app/audit
     networks: [sentra_net]
 
-  telegram_bot:
-    build: ./telegram_bot
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      AGENT_URL: http://agents:8000
-    depends_on:
-      - agents
-    networks: [sentra_net]
-
 volumes:
   pgdata:
   odoo-data:

@@ -24,7 +24,9 @@ Sentra/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── app/
-│   │   ├── main.py         # FastAPI: /health, /webhook/alertmanager
+│   │   ├── main.py         # FastAPI: /health, /webhook/alertmanager, /ui, /api
+│   │   ├── auth.py         # HTTP Basic auth for UI and API
+│   │   ├── ui/             # static web UI (incidents, approvals, ask)
 │   │   ├── config.py       # env settings
 │   │   ├── llm.py          # LLM client wrapper
 │   │   ├── loop.py         # reasoning loop
@@ -42,9 +44,6 @@ Sentra/
 │   │       ├── odoo.py
 │   │       └── actions.py
 │   └── tests/
-├── telegram_bot/
-│   ├── Dockerfile
-│   └── bot.py              # commands, buttons, user-ID allowlist
 ├── monitoring/
 │   ├── prometheus/prometheus.yml
 │   ├── prometheus/alerts.yml
@@ -67,7 +66,6 @@ All services share one network, `sentra_net`.
 | `db` | postgres:15 | — | — | Volume `pgdata` |
 | `odoo` | odoo:17 | 8069 | db | Mounts `odoo/addons`, `odoo.conf`, volume `odoo-data` |
 | `agents` | `./agents` | 8000 | odoo, prometheus | Docker socket mounted; audit + incidents volumes |
-| `telegram_bot` | `./telegram_bot` | — | agents | Outbound polling only |
 | `prometheus` | prom/prometheus | 9090 | — | Loads `alerts.yml` |
 | `alertmanager` | prom/alertmanager | 9093 | prometheus | Webhook to `agents` |
 | `blackbox` | prom/blackbox-exporter | — | — | Probes `odoo:8069` |
@@ -75,7 +73,7 @@ All services share one network, `sentra_net`.
 | `cadvisor` | gcr.io/cadvisor/cadvisor | — | — | Container CPU/memory/restarts |
 | `grafana` | grafana/grafana | 3000 | prometheus | Provisioned datasource + dashboards |
 
-Only Odoo, Grafana, and the agent `/health` are exposed to the host; the rest are internal.
+The web UI is served by the `agents` service at `http://localhost:8000/ui`. Only Odoo, Grafana, and the agent service (UI + `/health`) are exposed to the host; the rest are internal.
 
 ---
 
@@ -94,7 +92,7 @@ blackbox / postgres_exporter / cAdvisor
                                         SRE agent loop
                                               │
                                               ▼
-                                  Telegram notifications
+                                  Web UI (incident feed)
 ```
 
 Alerts: `OdooDown`, `OdooHighLatency`, `PostgresConnectionsHigh`, `ContainerMemoryHigh`.
@@ -158,21 +156,30 @@ After an approved action, the agent runs one verification pass (status + metrics
 
 ---
 
-## 6. Human-Approval Flow (Telegram)
+## 6. Human-Approval Flow (Web UI)
 
-1. Agent decides an action tool is needed; `approvals.request()` stores `{id, tool, args, incident_id, expires_at}`.
-2. Bot sends: incident summary, diagnosis, exact action and arguments, with **Approve** / **Reject** inline buttons.
-3. Button callback carries the approval ID; the bot verifies the sender's Telegram user ID matches `TELEGRAM_ALLOWED_USER_ID`.
-4. The decision resolves the waiting agent. Approvals are single-use.
+**Web UI pages** (static HTML + JS served from `agents/app/ui/`, talking to `/api`):
+* **Incidents**: live list and detail view (alert, agent steps, diagnosis, proposed fix, postmortem link). Updates by polling every 3 s.
+* **Approvals**: pending actions with **Approve** / **Reject** buttons.
+* **Ask**: a text box for the Business agent.
+* **Audit**: recent tool calls and decisions.
+
+**Flow**
+1. Agent decides an action tool is needed; `approvals.request()` stores `{id, tool, args, incident_id, expires_at}` and the incident shows "awaiting approval".
+2. The UI displays the exact action and arguments with Approve / Reject.
+3. `POST /api/approvals/{id}` is authenticated (HTTP Basic, `UI_USERNAME` / `UI_PASSWORD`) and single-use.
+4. The decision resolves the waiting agent.
 5. No answer within `APPROVAL_TIMEOUT` (default 10 min) cancels the action and logs `timeout`.
-6. Decision, user ID, and time are written to the audit log.
+6. Decision, user, and time are written to the audit log.
 
-Business-agent flow: `/ask <question>` → Business agent loop (read-only tools only) → reply in chat.
+Business-agent flow: Ask page → `POST /api/ask` → Business agent loop (read-only tools only) → answer rendered in the page.
+
+Security: the UI is bound to localhost by default; every `/ui` and `/api` route except `/health` and the Alertmanager webhook requires Basic auth. The webhook accepts requests only from the internal Docker network.
 
 ---
 
 ## 7. Secrets Management
-* All secrets live in `.env` (Telegram token, allowed user ID, LLM API key, Odoo API key, DB passwords, Grafana admin password).
+* All secrets live in `.env` (UI username/password, LLM API key, Odoo API key, DB passwords, Grafana admin password).
 * `.env` is in `.gitignore`; `.env.example` lists variable names with placeholder values.
 * Compose injects values through `env_file`; secrets never appear in images, logs, or prompts.
 * The audit logger redacts known secret values.
@@ -186,7 +193,7 @@ Business-agent flow: `/ask <question>` → Business agent loop (read-only tools 
 | Odoo module | Odoo `TransactionCase` tests: state transitions, invoice generation, access rights, constraints. |
 | Tools | pytest unit tests per tool, including rejected unsafe inputs (non-SELECT SQL, non-allowlisted service). |
 | Agent loop | pytest with a mocked LLM returning scripted tool calls; assert step limit, approval gating, audit entries. |
-| Approval flow | Test timeout, reject, and approve paths with a fake bot. |
+| Approval flow | Test timeout, reject, and approve paths through the `/api/approvals` endpoints. |
 | End-to-end | Failure scenarios run by hand or script: stop Odoo, stop DB, fill connections, long query, Python error. Results recorded in `incidents/`. |
 
 ---
@@ -199,7 +206,7 @@ Business-agent flow: `/ask <question>` → Business agent loop (read-only tools 
 4. Monitoring and alerts (Phase 5)
 5. Agent tool layer with audit log (Phase 6)
 6. SRE agent loop and postmortems (Phase 7)
-7. Telegram notifications and approval flow (Phase 8)
+7. Web UI (incident feed) and approval flow (Phase 8)
 8. Business agent (Phase 9)
 9. Tests and failure scenarios (Phase 10)
 10. Docs and demo (Phase 11)

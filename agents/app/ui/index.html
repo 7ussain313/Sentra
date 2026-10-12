@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentra</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+    header { padding: 16px 24px; background: #1e293b; font-weight: 600; }
+    main { padding: 24px; max-width: 960px; margin: 0 auto; }
+    .card { background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <header>Sentra &mdash; AI SRE for Odoo</header>
+  <main>
+    <div class="card">
+      <h2>Status</h2>
+      <p id="status">Checking agent service&hellip;</p>
+    </div>
+    <div class="card">
+      <h2>Incidents</h2>
+      <p>No incidents yet. Incident list, approvals, and the Ask page arrive in later phases.</p>
+    </div>
+  </main>
+  <script>
+    fetch("/health").then(r => r.json())
+      .then(d => document.getElementById("status").textContent = "Agent service: " + d.status)
+      .catch(() => document.getElementById("status").textContent = "Agent service unreachable");
+  </script>
+</body>
+</html>

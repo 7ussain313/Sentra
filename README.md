@@ -12,4 +12,5 @@ docker compose up --build
 ```
 
 - Odoo: http://localhost:8069
+- Web UI (login with `UI_USERNAME` / `UI_PASSWORD`): http://localhost:8000/ui
 - Agent service health: http://localhost:8000/health
