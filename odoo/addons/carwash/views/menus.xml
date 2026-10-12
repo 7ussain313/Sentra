@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_carwash_root" name="Car Wash" sequence="50"
+              groups="carwash.group_staff"/>
+    <menuitem id="menu_carwash_bookings" name="Bookings" parent="menu_carwash_root"
+              action="action_carwash_booking" sequence="10"/>
+    <menuitem id="menu_carwash_vehicles" name="Vehicles" parent="menu_carwash_root"
+              action="action_carwash_vehicle" sequence="20"/>
+    <menuitem id="menu_carwash_services" name="Services" parent="menu_carwash_root"
+              action="action_carwash_service" sequence="30"/>
+</odoo>

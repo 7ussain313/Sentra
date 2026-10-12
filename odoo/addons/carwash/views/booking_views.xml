@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_carwash_booking_list" model="ir.ui.view">
+        <field name="name">carwash.booking.list</field>
+        <field name="model">carwash.booking</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state == 'cancelled'" decoration-success="state == 'done'"
+                  decoration-info="state == 'confirmed'" decoration-warning="state == 'in_progress'">
+                <field name="name"/>
+                <field name="scheduled_date"/>
+                <field name="customer_id"/>
+                <field name="vehicle_id"/>
+                <field name="service_id"/>
+                <field name="price"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'" decoration-info="state == 'confirmed'"
+                       decoration-warning="state == 'in_progress'" decoration-muted="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_carwash_booking_form" model="ir.ui.view">
+        <field name="name">carwash.booking.form</field>
+        <field name="model">carwash.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_start" string="Start" type="object" class="oe_highlight"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_done" string="Mark Done" type="object" class="oe_highlight"
+                            invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            groups="carwash.group_manager"
+                            invisible="state not in ('draft', 'confirmed', 'in_progress')"
+                            confirm="Cancel this booking?"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_id" readonly="state != 'draft'"/>
+                            <field name="vehicle_id" readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="service_id" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_date" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price" groups="carwash.group_manager"
+                                   readonly="state in ('done', 'cancelled')"/>
+                            <field name="price" groups="base.group_user,!carwash.group_manager"
+                                   readonly="1"/>
+                            <field name="invoice_id"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_carwash_booking_kanban" model="ir.ui.view">
+        <field name="name">carwash.booking.kanban</field>
+        <field name="model">carwash.booking</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" group_create="false" group_delete="false"
+                    group_edit="false" records_draggable="false">
+                <field name="state"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <strong><field name="name"/></strong>
+                            <div><field name="customer_id"/></div>
+                            <div class="text-muted">
+                                <field name="vehicle_id"/> · <field name="service_id"/>
+                            </div>
+                            <div><field name="scheduled_date"/></div>
+                            <div><field name="price" widget="monetary"/></div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_carwash_booking_calendar" model="ir.ui.view">
+        <field name="name">carwash.booking.calendar</field>
+        <field name="model">carwash.booking</field>
+        <field name="arch" type="xml">
+            <calendar date_start="scheduled_date" color="state" mode="week" quick_create="0">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="service_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_carwash_booking_search" model="ir.ui.view">
+        <field name="name">carwash.booking.search</field>
+        <field name="model">carwash.booking</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="vehicle_id"/>
+                <field name="service_id"/>
+                <filter name="open" string="Open"
+                        domain="[('state', 'in', ('draft', 'confirmed', 'in_progress'))]"/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_service" string="Service" context="{'group_by': 'service_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_carwash_booking" model="ir.actions.act_window">
+        <field name="name">Bookings</field>
+        <field name="res_model">carwash.booking</field>
+        <field name="view_mode">tree,kanban,form,calendar</field>
+    </record>
+</odoo>

@@ -6,7 +6,13 @@
     "license": "LGPL-3",
     "depends": ["base", "mail", "sale", "account"],
     "data": [
+        "security/security.xml",
+        "security/ir.model.access.csv",
         "data/sequence.xml",
+        "views/booking_views.xml",
+        "views/service_vehicle_views.xml",
+        "views/menus.xml",
+        "report/booking_receipt.xml",
     ],
     "installable": True,
     "application": True,
