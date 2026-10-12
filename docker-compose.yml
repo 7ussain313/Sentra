@@ -1,0 +1,67 @@
+name: sentra
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [sentra_net]
+
+  odoo:
+    image: odoo:17
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_PORT}:8069"
+    environment:
+      HOST: db
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./odoo/odoo.conf:/etc/odoo/odoo.conf:ro
+      - ./odoo/addons:/mnt/extra-addons
+    networks: [sentra_net]
+
+  agents:
+    build: ./agents
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - odoo
+    ports:
+      - "${AGENT_PORT}:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./incidents:/app/incidents
+      - ./audit:/app/audit
+    networks: [sentra_net]
+
+  telegram_bot:
+    build: ./telegram_bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      AGENT_URL: http://agents:8000
+    depends_on:
+      - agents
+    networks: [sentra_net]
+
+volumes:
+  pgdata:
+  odoo-data:
+
+networks:
+  sentra_net:
