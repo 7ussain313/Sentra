@@ -134,42 +134,42 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: State Machine
 
-- [ ] Add the `state` field with all workflow states.
-- [ ] Add buttons: Confirm, Start, Mark Done, Cancel.
-- [ ] Enforce valid transitions only.
-- [ ] Log state changes in the chatter.
+- [x] Add the `state` field with all workflow states.
+- [x] Add buttons: Confirm, Start, Mark Done, Cancel.
+- [x] Enforce valid transitions only.
+- [x] Log state changes in the chatter.
 
 ### Module: ERP Integration
 
-- [ ] Generate an invoice automatically when a booking is marked Done.
-- [ ] Link the invoice back to the booking.
-- [ ] Add computed field: total revenue per customer.
-- [ ] Add computed field: number of bookings per vehicle.
+- [x] Generate an invoice automatically when a booking is marked Done.
+- [x] Link the invoice back to the booking.
+- [x] Add computed field: total revenue per customer.
+- [x] Add computed field: number of bookings per vehicle.
 
 ### Module: Views
 
-- [ ] List view for bookings (with state colors).
-- [ ] Form view for bookings (with status bar and buttons).
-- [ ] Kanban view grouped by state.
-- [ ] Calendar view by scheduled date.
-- [ ] Views for services and vehicles.
-- [ ] Menu structure under a "Car Wash" app.
+- [x] List view for bookings (with state colors).
+- [x] Form view for bookings (with status bar and buttons).
+- [x] Kanban view grouped by state.
+- [x] Calendar view by scheduled date.
+- [x] Views for services and vehicles.
+- [x] Menu structure under a "Car Wash" app.
 
 ### Module: Security
 
-- [ ] Create Manager and Staff groups.
-- [ ] Create `ir.model.access.csv`.
-- [ ] Restrict price override and cancellation to Managers.
+- [x] Create Manager and Staff groups.
+- [x] Create `ir.model.access.csv`.
+- [x] Restrict price override and cancellation to Managers.
 
 ### Module: Reports
 
-- [ ] PDF booking receipt.
+- [x] PDF booking receipt.
 
 ### ✅ Done When
 
-- [ ] A booking can go through the full workflow in the UI.
-- [ ] Marking a booking Done creates a correct invoice.
-- [ ] Staff users cannot perform Manager-only actions.
+- [x] A booking can go through the full workflow in the UI.
+- [x] Marking a booking Done creates a correct invoice.
+- [x] Staff users cannot perform Manager-only actions.
 
 ---
 
