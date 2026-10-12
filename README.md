@@ -56,3 +56,18 @@ docker compose exec -T -e PYTHONPATH=/app -w /app agents python tests/manual_liv
 Tools live in `agents/app/tools/`; every call goes through `registry.call()`, which validates
 input, gates action tools behind an approval and appends to `audit/audit.jsonl`.
 Offline safety tests: `pip install -r agents/requirements-dev.txt && pytest agents/tests`.
+
+## SRE agent
+
+Set `ANTHROPIC_API_KEY` (and optionally `LLM_MODEL`, `MAX_STEPS`, `APPROVAL_TIMEOUT_SECONDS`) in `.env`.
+An Alertmanager alert starts an incident (deduplicated by alert name over 10 minutes); the agent
+investigates with read-only tools, proposes a fix, waits for human approval before any action,
+verifies, and writes a postmortem to `incidents/<id>.md`.
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/incidents`, `GET /api/incidents/{id}` | incident list / detail with agent steps |
+| `GET /api/incidents/{id}/postmortem` | postmortem Markdown |
+| `GET /api/approvals`, `POST /api/approvals/{id}` `{"approve": true}` | pending approvals / decide (single use) |
+
+Without an API key the incident is still recorded and a postmortem is written, with status `agent_unavailable`.

@@ -5,16 +5,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel, ConfigDict
 
-from app import container_metrics
+from app import approvals, container_metrics, sre_agent
+from app.incidents import store as incident_store
 from app.auth import require_user
 
 log = logging.getLogger("sentra")
 
 app = FastAPI(title="Sentra Agent Service")
+sre_agent.install_approval_gate()
 
 UI_DIR = Path(__file__).parent / "ui"
 AUDIT_DIR = Path("/app/audit")
@@ -62,7 +64,8 @@ def alertmanager_webhook(payload: AlertmanagerPayload, user: str = Depends(requi
             f.write(json.dumps(record) + "\n")
     except OSError:
         log.exception("could not persist alert")
-    return {"accepted": len(payload.alerts)}
+    incident_ids = sre_agent.handle_alertmanager(payload.model_dump())
+    return {"accepted": len(payload.alerts), "incidents": incident_ids}
 
 
 @app.get("/alerts")
@@ -75,3 +78,47 @@ def recent_alerts(_user: str = Depends(require_user)) -> list[dict]:
 @app.get("/metrics", response_class=PlainTextResponse)
 def metrics(_user: str = Depends(require_user)) -> str:
     return container_metrics.render()
+
+
+# ---- Minimal API used by the SRE flow; the full web UI is built on these in Phase 8 ----
+@app.get("/api/incidents")
+def list_incidents(_user: str = Depends(require_user)) -> list[dict]:
+    keys = ("id", "alertname", "status", "severity", "created_at", "updated_at", "resolved_at",
+            "duplicates", "postmortem")
+    return [{k: i[k] for k in keys} for i in incident_store.list()]
+
+
+@app.get("/api/incidents/{incident_id}")
+def get_incident(incident_id: str, _user: str = Depends(require_user)) -> dict:
+    inc = incident_store.get(incident_id)
+    if inc is None:
+        raise HTTPException(404, "unknown incident")
+    return inc
+
+
+@app.get("/api/incidents/{incident_id}/postmortem", response_class=PlainTextResponse)
+def get_postmortem(incident_id: str, _user: str = Depends(require_user)) -> str:
+    inc = incident_store.get(incident_id)
+    if inc is None or not inc.get("postmortem"):
+        raise HTTPException(404, "no postmortem yet")
+    return (incident_store.directory / inc["postmortem"]).read_text(encoding="utf-8")
+
+
+@app.get("/api/approvals")
+def list_approvals(_user: str = Depends(require_user)) -> list[dict]:
+    return [a.public() for a in approvals.store.all()]
+
+
+class Decision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    approve: bool
+
+
+@app.post("/api/approvals/{approval_id}")
+def decide_approval(approval_id: str, body: Decision, user: str = Depends(require_user)) -> dict:
+    try:
+        return approvals.store.decide(approval_id, body.approve, user).public()
+    except KeyError:
+        raise HTTPException(404, "unknown approval")
+    except ValueError as e:
+        raise HTTPException(409, str(e))

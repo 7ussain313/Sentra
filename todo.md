@@ -262,31 +262,31 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Agent Loop
 
-- [ ] Define the system prompt (role, rules, available tools).
-- [ ] Register tools with the LLM using tool calling.
-- [ ] Implement the reasoning loop (call model → run tool → return result → repeat).
-- [ ] Set a maximum number of steps per incident.
-- [ ] Stop when the agent reaches a diagnosis or the step limit.
+- [x] Define the system prompt (role, rules, available tools).
+- [x] Register tools with the LLM using tool calling.
+- [x] Implement the reasoning loop (call model → run tool → return result → repeat).
+- [x] Set a maximum number of steps per incident.
+- [x] Stop when the agent reaches a diagnosis or the step limit.
 
 ### Module: Incident Handling
 
-- [ ] Trigger the agent from the Alertmanager webhook.
-- [ ] Investigate: read logs, check containers, query metrics.
-- [ ] Produce a diagnosis (what broke, likely cause, evidence).
-- [ ] Propose a fix.
-- [ ] Request approval before any action tool runs.
-- [ ] Verify the fix worked after the action.
+- [x] Trigger the agent from the Alertmanager webhook.
+- [x] Investigate: read logs, check containers, query metrics.
+- [x] Produce a diagnosis (what broke, likely cause, evidence).
+- [x] Propose a fix.
+- [x] Request approval before any action tool runs.
+- [x] Verify the fix worked after the action.
 
 ### Module: Postmortem
 
-- [ ] Generate a postmortem after each incident (timeline, cause, fix, prevention).
-- [ ] Save postmortems to `incidents/` as Markdown.
+- [x] Generate a postmortem after each incident (timeline, cause, fix, prevention).
+- [x] Save postmortems to `incidents/` as Markdown.
 
 ### ✅ Done When
 
-- [ ] The agent diagnoses each planned incident type correctly.
-- [ ] No action runs without approval.
-- [ ] A postmortem is created for every incident.
+- [ ] The agent diagnoses each planned incident type correctly. (needs a real `ANTHROPIC_API_KEY`; loop, tools and flow are tested with a scripted model; evaluated in Phase 10)
+- [x] No action runs without approval.
+- [x] A postmortem is created for every incident.
 
 ---
 

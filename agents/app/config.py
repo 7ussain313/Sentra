@@ -10,7 +10,14 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore", case_sensitive=False)
 
     audit_dir: Path = Path("/app/audit")
+    incidents_dir: Path = Path("/app/incidents")
     compose_project: str = "sentra"
+
+    anthropic_api_key: str = ""
+    llm_model: str = "claude-sonnet-5-5"
+    max_steps: int = 8
+    approval_timeout_seconds: int = 600
+    dedupe_window_seconds: int = 600
 
     prometheus_url: str = "http://prometheus:9090"
 
