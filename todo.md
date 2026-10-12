@@ -177,17 +177,17 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Demo Data
 
-- [ ] Seed services (e.g., Basic Wash, Full Wash, Interior Cleaning).
-- [ ] Seed customers and vehicles.
-- [ ] Seed bookings in every workflow state.
-- [ ] Seed paid and unpaid invoices.
-- [ ] Seed a Manager user and a Staff user.
-- [ ] Seed a dedicated read-only API user for the agents.
+- [x] Seed services (e.g., Basic Wash, Full Wash, Interior Cleaning).
+- [x] Seed customers and vehicles.
+- [x] Seed bookings in every workflow state.
+- [x] Seed paid and unpaid invoices.
+- [x] Seed a Manager user and a Staff user.
+- [x] Seed a dedicated read-only API user for the agents.
 
 ### ✅ Done When
 
-- [ ] Seed loads on a fresh database without errors.
-- [ ] Dashboards and reports show meaningful data.
+- [x] Seed loads on a fresh database without errors.
+- [x] Dashboards and reports show meaningful data.
 
 ---
 

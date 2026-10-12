@@ -5,3 +5,6 @@ access_carwash_vehicle_staff,carwash.vehicle staff,model_carwash_vehicle,group_s
 access_carwash_vehicle_manager,carwash.vehicle manager,model_carwash_vehicle,group_manager,1,1,1,1
 access_carwash_booking_staff,carwash.booking staff,model_carwash_booking,group_staff,1,1,1,0
 access_carwash_booking_manager,carwash.booking manager,model_carwash_booking,group_manager,1,1,1,1
+access_carwash_service_agent,carwash.service agent,model_carwash_service,group_agent_readonly,1,0,0,0
+access_carwash_vehicle_agent,carwash.vehicle agent,model_carwash_vehicle,group_agent_readonly,1,0,0,0
+access_carwash_booking_agent,carwash.booking agent,model_carwash_booking,group_agent_readonly,1,0,0,0
