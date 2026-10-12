@@ -45,3 +45,14 @@ docker compose up -d
 Alerts (`OdooDown`, `OdooHighLatency`, `PostgresConnectionsHigh`, `ContainerMemoryHigh`)
 are posted by Alertmanager to `POST /webhook/alertmanager` on the agent service.
 Received alerts are listed at `GET /alerts` and appended to `audit/alerts.jsonl`.
+
+## Agent tool layer
+
+```bash
+sh scripts/create_agent_db_roles.sh     # one-time: sentra_readonly / sentra_signal + helper functions
+docker compose exec -T -e PYTHONPATH=/app -w /app agents python tests/manual_live.py   # live check
+```
+
+Tools live in `agents/app/tools/`; every call goes through `registry.call()`, which validates
+input, gates action tools behind an approval and appends to `audit/audit.jsonl`.
+Offline safety tests: `pip install -r agents/requirements-dev.txt && pytest agents/tests`.

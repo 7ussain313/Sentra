@@ -122,12 +122,14 @@ Alertmanager groups by `alertname`, repeats every 30 minutes while firing, and a
 * **Input validation:** typed schemas; reject unknown fields and out-of-range values.
 * **SQL guard:** exactly one statement, must begin with `SELECT`, no `;` chaining, no writing functions; executed in a read-only transaction by a read-only DB role.
 * **Output limits:** logs and rows are truncated to keep the context small.
-* **Action gate:** the registry marks action tools; the loop will not execute them until `approvals.wait()` returns approved.
+* **Action gate:** the registry marks action tools. `registry.call()` runs an action only when called with an `approval_id` that the installed approval checker grants for that exact tool and arguments; the default checker denies everything, so nothing can run before the approval flow is wired in.
 * **Audit:** every call, input, output (truncated), timestamp, incident ID, and approval decision is appended to `audit/audit.jsonl`.
 
 ### 4.3 Credentials
 * **Odoo:** dedicated user `sentra_agent`, read-only access, authenticated through the external API with an API key from `.env`. The Business agent uses only this user.
-* **PostgreSQL:** read-only role for `query_database`; `kill_long_running_query` uses a separate role with `pg_signal_backend` only, and is reachable only through the approval gate.
+* **PostgreSQL** (created by `scripts/create_agent_db_roles.sh`):
+  * `sentra_readonly` has `pg_monitor` only, read-only transactions and a 5 s timeout. It can read `pg_stat_*`, locks and catalogs but no table data. Used by `query_database`.
+  * `sentra_signal` has no table access. It may only `EXECUTE` two `SECURITY DEFINER` helpers: `sentra_terminate_backend(pid)` (client backends of the Odoo database only; refuses its own session, background processes and the agent roles) and `sentra_clear_odoo_cache()` (bumps Odoo's `base_cache_signaling_*` sequences so every worker drops its caches). A plain `pg_signal_backend` role could not be used because Odoo connects as the cluster superuser, which that role cannot signal. Used by the approval-gated action tools.
 * **Docker:** socket access limited to the tools in `containers.py`/`actions.py`, and only for allowlisted services.
 
 ---

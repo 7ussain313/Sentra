@@ -231,30 +231,30 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Read-only Tools
 
-- [ ] `read_logs(service, lines)` — read recent container logs.
-- [ ] `check_container_status()` — list containers and their health.
-- [ ] `query_metrics(promql)` — query Prometheus.
-- [ ] `query_database(query)` — run read-only SQL (SELECT only, enforced).
-- [ ] `odoo_search(model, domain, fields)` — read Odoo data via its external API.
+- [x] `read_logs(service, lines)` — read recent container logs.
+- [x] `check_container_status()` — list containers and their health.
+- [x] `query_metrics(promql)` — query Prometheus.
+- [x] `query_database(query)` — run read-only SQL (SELECT only, enforced).
+- [x] `odoo_search(model, domain, fields)` — read Odoo data via its external API.
 
 ### Module: Action Tools (require approval)
 
-- [ ] `restart_service(service)`
-- [ ] `clear_odoo_cache()`
-- [ ] `kill_long_running_query(pid)`
+- [x] `restart_service(service)`
+- [x] `clear_odoo_cache()`
+- [x] `kill_long_running_query(pid)`
 
 ### Module: Tool Safety
 
-- [ ] Allowlist of services the agent may touch.
-- [ ] Validate every tool input.
-- [ ] Block any non-SELECT SQL.
-- [ ] Log every tool call (input, output, timestamp) to an audit log.
+- [x] Allowlist of services the agent may touch.
+- [x] Validate every tool input.
+- [x] Block any non-SELECT SQL.
+- [x] Log every tool call (input, output, timestamp) to an audit log.
 
 ### ✅ Done When
 
-- [ ] Every tool works when called manually from Python.
-- [ ] Unsafe inputs are rejected.
-- [ ] Every call appears in the audit log.
+- [x] Every tool works when called manually from Python.
+- [x] Unsafe inputs are rejected.
+- [x] Every call appears in the audit log.
 
 ---
 
