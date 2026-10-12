@@ -2,13 +2,15 @@ groups:
   - name: sentra
     rules:
       - alert: OdooDown
-        expr: probe_success{job="odoo-health"} == 0
+        # Odoo's /web/health answers 200 even when PostgreSQL is gone, so a down
+        # database must raise the same alert (pg_up comes from postgres_exporter).
+        expr: (probe_success{job="odoo-health"} == 0) or (pg_up == 0)
         for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "Odoo is not answering HTTP health checks"
-          description: "The probe of {{ $labels.instance }} has failed for more than 1 minute."
+          summary: "Odoo or its database is not available"
+          description: "{{ if $labels.instance }}HTTP probe of {{ $labels.instance }} has failed{{ else }}PostgreSQL is unreachable (pg_up=0){{ end }} for more than 1 minute."
 
       - alert: OdooHighLatency
         expr: probe_duration_seconds{job="odoo-login"} > 2 and probe_success{job="odoo-login"} == 1

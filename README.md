@@ -71,3 +71,14 @@ verifies, and writes a postmortem to `incidents/<id>.md`.
 | `GET /api/approvals`, `POST /api/approvals/{id}` `{"approve": true}` | pending approvals / decide (single use) |
 
 Without an API key the incident is still recorded and a postmortem is written, with status `agent_unavailable`.
+
+## Web UI and business agent
+
+`http://localhost:8000/ui` (HTTP Basic auth with `UI_USERNAME` / `UI_PASSWORD`):
+**Incidents** (live list, agent steps, diagnosis, proposed fix, postmortem, Approve/Reject),
+**Approvals**, **Ask** (business agent, read-only) and **Audit**.
+
+The business agent only has `odoo_search` and `odoo_aggregate`, which use the read-only
+`sentra_agent` API user with fixed RPC methods (`search_read`, `read_group`); Odoo itself
+rejects any write from that user. `agents/tests/manual_business_truth.py` checks the five
+supported questions' queries against SQL ground truth.

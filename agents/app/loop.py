@@ -66,6 +66,7 @@ def run_loop(
     incident_id: str | None,
     approval_timeout: float,
     on_event: EventFn,
+    actor: str = "sre-agent",
     approvals: approvals_mod.ApprovalStore = approvals_mod.store,
 ) -> LoopResult:
     schemas = tools.schemas(tool_names)
@@ -117,7 +118,8 @@ def run_loop(
                 approval_id = outcome[2]
 
             try:
-                out = tools.call(call.name, call.input, incident_id=incident_id, approval_id=approval_id)
+                out = tools.call(call.name, call.input, incident_id=incident_id, approval_id=approval_id,
+                                 actor=actor)
             except ApprovalRequired as e:
                 on_event("tool_call", step=step, tool=call.name, input=call.input,
                          status="blocked", output=str(e))

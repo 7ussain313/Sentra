@@ -18,6 +18,7 @@ _ALL: list[Tool] = [
     metrics.TOOL,
     database.TOOL,
     odoo.TOOL,
+    odoo.AGG_TOOL,
     actions.RESTART,
     actions.CLEAR_CACHE,
     actions.KILL_QUERY,

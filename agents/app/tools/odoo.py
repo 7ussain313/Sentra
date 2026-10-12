@@ -49,6 +49,12 @@ def validate_domain(domain: list) -> list:
     return out
 
 
+def _check_model(v: str) -> str:
+    if v in ALLOWED_MODELS_EXACT or MODEL_RE.match(v):
+        return v
+    raise ValueError(f"model not in allowlist: {v!r}")
+
+
 class OdooSearchInput(StrictInput):
     model: str
     domain: list = Field(default_factory=list)
@@ -58,9 +64,7 @@ class OdooSearchInput(StrictInput):
     @field_validator("model")
     @classmethod
     def _model_allowed(cls, v: str) -> str:
-        if v in ALLOWED_MODELS_EXACT or MODEL_RE.match(v):
-            return v
-        raise ValueError(f"model not in allowlist: {v!r}")
+        return _check_model(v)
 
     @field_validator("fields")
     @classmethod
@@ -114,5 +118,90 @@ TOOL = Tool(
     ),
     model=OdooSearchInput,
     fn=odoo_search,
+    kind="read",
+)
+
+
+# ---------------------------------------------------------------- aggregates
+GROUP_RE = re.compile(r"^[a-z_][a-z0-9_]*(:(day|week|month|quarter|year))?$")
+AGG_RE = re.compile(r"^[a-z_][a-z0-9_]*:(sum|avg|min|max|count|count_distinct)$")
+ORDER_RE = re.compile(r"^[a-z_][a-z0-9_:]*( (asc|desc))?(, [a-z_][a-z0-9_:]*( (asc|desc))?)*$")
+
+
+class OdooAggregateInput(StrictInput):
+    model: str
+    domain: list = Field(default_factory=list)
+    group_by: list[str] = Field(default_factory=list, max_length=3)
+    aggregates: list[str] = Field(default_factory=list, max_length=6)
+    order_by: str | None = Field(None, max_length=120)
+    limit: int = Field(20, ge=1, le=100)
+
+    @field_validator("model")
+    @classmethod
+    def _model_allowed(cls, v: str) -> str:
+        return _check_model(v)
+
+    @field_validator("group_by")
+    @classmethod
+    def _group_ok(cls, v: list[str]) -> list[str]:
+        for g in v:
+            if not GROUP_RE.match(g):
+                raise ValueError(f"invalid group_by: {g!r}")
+        return v
+
+    @field_validator("aggregates")
+    @classmethod
+    def _agg_ok(cls, v: list[str]) -> list[str]:
+        for a in v:
+            if not AGG_RE.match(a):
+                raise ValueError(f"invalid aggregate (use field:sum|avg|min|max|count|count_distinct): {a!r}")
+        return v
+
+    @field_validator("order_by")
+    @classmethod
+    def _order_ok(cls, v: str | None) -> str | None:
+        if v is not None and not ORDER_RE.match(v):
+            raise ValueError(f"invalid order_by: {v!r}")
+        return v
+
+
+def odoo_aggregate(p: OdooAggregateInput) -> dict:
+    cfg = get_settings()
+    domain = validate_domain(p.domain)
+    if not cfg.odoo_agent_api_key:
+        raise ToolError("ODOO_AGENT_API_KEY is not configured")
+    if not p.group_by and not p.aggregates:
+        raise ToolError("Give at least one group_by or aggregate")
+    url = cfg.odoo_url.rstrip("/")
+    kwargs: dict[str, Any] = {"lazy": False, "limit": p.limit}
+    if p.order_by:
+        kwargs["orderby"] = p.order_by
+    try:
+        uid = _uid(url, cfg.odoo_db_name, cfg.odoo_agent_login, cfg.odoo_agent_api_key)
+        rpc = xmlrpc.client.ServerProxy(url + "/xmlrpc/2/object", allow_none=True)
+        # Fixed method: aggregation only, never a write.
+        groups = rpc.execute_kw(
+            cfg.odoo_db_name, uid, cfg.odoo_agent_api_key, p.model, "read_group",
+            [domain, p.aggregates or ["id:count"], p.group_by], kwargs,
+        )
+    except xmlrpc.client.Fault as e:
+        raise ToolError(f"Odoo error: {e.faultString.strip().splitlines()[-1][:300]}") from e
+    except (OSError, xmlrpc.client.ProtocolError) as e:
+        _uid_cache.clear()
+        raise ToolError(f"Odoo is not reachable: {e}") from e
+    clean = [{k: v for k, v in g.items() if not k.startswith("__") or k == "__count"}
+             for g in groups]
+    return {"model": p.model, "count": len(clean), "groups": clean}
+
+
+AGG_TOOL = Tool(
+    name="odoo_aggregate",
+    description=(
+        "Read-only aggregation in Odoo (read_group): sum/avg/min/max/count, optionally grouped. "
+        "aggregates like 'amount_total:sum'; group_by like 'partner_id' or 'scheduled_date:day'. "
+        "Same model allowlist and domain format as odoo_search. Prefer this over summing records yourself."
+    ),
+    model=OdooAggregateInput,
+    fn=odoo_aggregate,
     kind="read",
 )

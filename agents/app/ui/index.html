@@ -5,28 +5,283 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sentra</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
-    header { padding: 16px 24px; background: #1e293b; font-weight: 600; }
-    main { padding: 24px; max-width: 960px; margin: 0 auto; }
-    .card { background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    :root {
+      --bg: #0f172a; --panel: #1e293b; --line: #334155; --text: #e2e8f0; --muted: #94a3b8;
+      --ok: #22c55e; --warn: #f59e0b; --bad: #ef4444; --info: #38bdf8; --accent: #6366f1;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; background: var(--panel);
+             border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    header h1 { font-size: 16px; margin: 0; }
+    nav { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
+    nav button { background: none; border: 0; color: var(--muted); padding: 8px 12px; border-radius: 6px;
+                 cursor: pointer; font-size: 14px; }
+    nav button.active { background: var(--bg); color: var(--text); }
+    nav .count { background: var(--bad); color: #fff; border-radius: 10px; padding: 0 6px; margin-left: 6px;
+                 font-size: 12px; }
+    #health { font-size: 13px; color: var(--muted); }
+    main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 16px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px;
+            margin-bottom: 12px; }
+    .item { padding: 10px; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 8px;
+            cursor: pointer; }
+    .item:hover, .item.sel { border-color: var(--accent); }
+    .muted { color: var(--muted); font-size: 12px; }
+    .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+    .b-investigating { background: #1e3a5f; color: var(--info); }
+    .b-awaiting_approval { background: #5b3a06; color: var(--warn); }
+    .b-fixed, .b-ok, .b-approved { background: #0b3b21; color: var(--ok); }
+    .b-diagnosed { background: #1e3a5f; color: var(--info); }
+    .b-escalated, .b-rejected, .b-timeout, .b-blocked, .b-failed, .b-agent_unavailable, .b-error
+      { background: #4c1d1d; color: var(--bad); }
+    .b-pending { background: #5b3a06; color: var(--warn); }
+    pre { white-space: pre-wrap; word-break: break-word; background: var(--bg); border: 1px solid var(--line);
+          border-radius: 6px; padding: 10px; margin: 8px 0; font-size: 13px; max-height: 420px; overflow: auto; }
+    h2 { font-size: 15px; margin: 0 0 8px; }
+    h3 { font-size: 13px; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    button.act { border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; font-weight: 600; color: #fff; }
+    button.approve { background: var(--ok); } button.reject { background: var(--bad); }
+    button.primary { background: var(--accent); }
+    textarea { width: 100%; min-height: 70px; background: var(--bg); color: var(--text);
+               border: 1px solid var(--line); border-radius: 6px; padding: 10px; font: inherit; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .step { border-left: 3px solid var(--line); padding: 4px 10px; margin: 6px 0; font-size: 13px; }
+    .step.tool { border-color: var(--info); } .step.approval { border-color: var(--warn); }
+    .step.finish { border-color: var(--ok); }
+    .chips button { background: var(--bg); color: var(--muted); border: 1px solid var(--line);
+                    border-radius: 14px; padding: 4px 10px; margin: 2px; cursor: pointer; font-size: 12px; }
   </style>
 </head>
 <body>
-  <header>Sentra &mdash; AI SRE for Odoo</header>
+  <header>
+    <h1>Sentra &mdash; AI SRE for Odoo</h1>
+    <nav id="nav">
+      <button data-tab="incidents" class="active">Incidents</button>
+      <button data-tab="approvals">Approvals<span id="pendingCount" class="count" hidden>0</span></button>
+      <button data-tab="ask">Ask</button>
+      <button data-tab="audit">Audit</button>
+    </nav>
+    <span id="health">checking&hellip;</span>
+  </header>
   <main>
-    <div class="card">
-      <h2>Status</h2>
-      <p id="status">Checking agent service&hellip;</p>
-    </div>
-    <div class="card">
-      <h2>Incidents</h2>
-      <p>No incidents yet. Incident list, approvals, and the Ask page arrive in later phases.</p>
-    </div>
+    <section id="tab-incidents">
+      <div class="grid">
+        <div><div id="incidentList"></div></div>
+        <div id="incidentDetail"><div class="card muted">Select an incident.</div></div>
+      </div>
+    </section>
+    <section id="tab-approvals" hidden><div id="approvalList"></div></section>
+    <section id="tab-ask" hidden>
+      <div class="card">
+        <h2>Ask about the business</h2>
+        <div class="chips" id="chips"></div>
+        <textarea id="question" maxlength="500" placeholder="e.g. What was revenue this week?"></textarea>
+        <p><button class="act primary" id="askBtn">Ask</button> <span id="askState" class="muted"></span></p>
+      </div>
+      <div id="answers"></div>
+    </section>
+    <section id="tab-audit" hidden><div class="card"><div id="auditTable"></div></div></section>
   </main>
-  <script>
-    fetch("/health").then(r => r.json())
-      .then(d => document.getElementById("status").textContent = "Agent service: " + d.status)
-      .catch(() => document.getElementById("status").textContent = "Agent service unreachable");
-  </script>
+
+<script>
+"use strict";
+// ---- tiny DOM helpers: all data is inserted as text nodes, never parsed as markup ----
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  return n;
+}
+const badge = (s) => el("span", { class: "badge b-" + s }, String(s).replace(/_/g, " "));
+const fmt = (ts) => ts ? new Date(ts).toLocaleString() : "-";
+const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); return n; };
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error(path + " -> " + r.status + " " + (await r.text()).slice(0, 200));
+  const ct = r.headers.get("content-type") || "";
+  return ct.includes("json") ? r.json() : r.text();
+}
+
+let tab = "incidents", selected = null, askBusy = false;
+const answers = [];
+
+document.getElementById("nav").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  tab = b.dataset.tab;
+  for (const x of document.querySelectorAll("nav button")) x.classList.toggle("active", x === b);
+  for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== "tab-" + tab;
+  refresh();
+});
+
+// ---- incidents ----
+async function renderIncidents() {
+  const list = await api("/api/incidents");
+  const box = clear(document.getElementById("incidentList"));
+  if (!list.length) box.append(el("div", { class: "card muted" }, "No incidents yet. Alerts from Alertmanager appear here."));
+  for (const i of list) {
+    box.append(el("div", { class: "item" + (i.id === selected ? " sel" : ""), onclick: () => { selected = i.id; refresh(); } },
+      el("div", {}, el("strong", {}, i.alertname), " ", badge(i.status)),
+      el("div", { class: "muted" }, fmt(i.created_at), i.duplicates ? " · +" + i.duplicates + " duplicate" : ""),
+      el("div", { class: "muted" }, i.id)));
+  }
+  if (!selected && list.length) selected = list[0].id;
+  if (selected) await renderDetail(selected);
+}
+
+async function renderDetail(id) {
+  const [inc, approvals] = await Promise.all([api("/api/incidents/" + id), api("/api/approvals")]);
+  const box = clear(document.getElementById("incidentDetail"));
+  const head = el("div", { class: "card" },
+    el("h2", {}, inc.alertname, " ", badge(inc.status)),
+    el("div", { class: "muted" }, inc.id, " · severity ", inc.severity, " · started ", fmt(inc.created_at),
+       inc.resolved_at ? " · alert resolved " + fmt(inc.resolved_at) : ""),
+    el("p", {}, (inc.alert.annotations || {}).description || ""));
+  box.append(head);
+
+  for (const a of approvals.filter((x) => x.incident_id === id && x.status === "pending")) {
+    box.append(approvalCard(a));
+  }
+  if (inc.proposed_action) {
+    box.append(el("div", { class: "card" }, el("h3", {}, "Proposed fix"),
+      el("pre", {}, inc.proposed_action.tool + " " + JSON.stringify(inc.proposed_action.args))));
+  }
+  box.append(el("div", { class: "card" }, el("h3", {}, "Diagnosis"),
+    el("pre", {}, inc.diagnosis || "The agent is still investigating…")));
+
+  const steps = el("div", { class: "card" }, el("h3", {}, "Agent steps"));
+  for (const e of inc.events) {
+    const t = fmt(e.ts).split(", ").pop();
+    if (e.kind === "tool_call") {
+      steps.append(el("div", { class: "step tool" }, el("strong", {}, e.tool), " ", badge(e.status),
+        el("span", { class: "muted" }, " " + t + (e.approval_id ? " · approval " + e.approval_id : "")),
+        el("div", { class: "muted" }, JSON.stringify(e.input)),
+        el("div", {}, String(e.output || "").slice(0, 300))));
+    } else if (e.kind === "assistant_text") {
+      steps.append(el("div", { class: "step" }, el("span", { class: "muted" }, t + " agent: "), e.text));
+    } else if (e.kind === "approval_requested") {
+      steps.append(el("div", { class: "step approval" }, el("strong", {}, "Approval requested "), e.tool + " " + JSON.stringify(e.args),
+        el("span", { class: "muted" }, " " + t)));
+    } else if (e.kind === "approval_decided") {
+      steps.append(el("div", { class: "step approval" }, el("strong", {}, "Decision: "), badge(e.status),
+        el("span", { class: "muted" }, (e.decided_by ? " by " + e.decided_by : "") + " " + t)));
+    } else if (["alert_received", "duplicate_alert", "alert_resolved", "agent_started", "agent_finished", "llm_error"].includes(e.kind)) {
+      steps.append(el("div", { class: "step " + (e.kind === "agent_finished" ? "finish" : "") },
+        el("span", { class: "muted" }, t + " "), e.kind.replace(/_/g, " "),
+        e.stop_reason ? " (" + e.stop_reason + ")" : "", e.error ? ": " + e.error : ""));
+    }
+  }
+  box.append(steps);
+
+  if (inc.postmortem) {
+    const pm = await api("/api/incidents/" + id + "/postmortem");
+    box.append(el("div", { class: "card" }, el("h3", {}, "Postmortem"), el("pre", {}, pm)));
+  }
+}
+
+function approvalCard(a) {
+  const state = el("span", { class: "muted" });
+  const send = async (approve) => {
+    try {
+      await api("/api/approvals/" + a.id, { method: "POST", headers: { "content-type": "application/json" },
+                                             body: JSON.stringify({ approve }) });
+      state.textContent = approve ? "Approved." : "Rejected.";
+    } catch (err) { state.textContent = "Could not record decision: " + err.message; }
+    refresh();
+  };
+  return el("div", { class: "card", style: "border-color: var(--warn)" },
+    el("h2", {}, "Approval needed: ", a.tool, " ", badge("pending")),
+    el("pre", {}, JSON.stringify(a.args, null, 2)),
+    el("div", { class: "muted" }, a.summary, " · expires ", fmt(a.expires_at)),
+    el("p", {}, el("button", { class: "act approve", onclick: () => send(true) }, "Approve"), " ",
+       el("button", { class: "act reject", onclick: () => send(false) }, "Reject"), " ", state));
+}
+
+// ---- approvals ----
+async function renderApprovals() {
+  const items = await api("/api/approvals");
+  const box = clear(document.getElementById("approvalList"));
+  const pending = items.filter((a) => a.status === "pending");
+  const done = items.filter((a) => a.status !== "pending").reverse();
+  if (!pending.length) box.append(el("div", { class: "card muted" }, "No pending approvals."));
+  for (const a of pending) box.append(approvalCard(a));
+  if (done.length) {
+    const t = el("table", {}, el("tr", {}, ...["Time", "Tool", "Args", "Incident", "Decision", "By"].map((h) => el("th", {}, h))));
+    for (const a of done) t.append(el("tr", {}, el("td", {}, fmt(a.decided_at || a.requested_at)), el("td", {}, a.tool),
+      el("td", {}, JSON.stringify(a.args)), el("td", {}, a.incident_id || ""), el("td", {}, badge(a.status)),
+      el("td", {}, a.decided_by || "")));
+    box.append(el("div", { class: "card" }, el("h3", {}, "Recent decisions"), t));
+  }
+}
+
+// ---- ask ----
+const EXAMPLES = ["What was revenue this week?", "Which invoices are unpaid?",
+  "How many bookings are scheduled tomorrow?", "Who are the top 5 customers?",
+  "Which service is most popular this month?"];
+const chips = document.getElementById("chips");
+for (const q of EXAMPLES) chips.append(el("button", { onclick: () => { document.getElementById("question").value = q; } }, q));
+
+document.getElementById("askBtn").addEventListener("click", async () => {
+  const q = document.getElementById("question").value.trim();
+  if (q.length < 3 || askBusy) return;
+  askBusy = true;
+  const state = document.getElementById("askState");
+  state.textContent = "Thinking…";
+  try {
+    const r = await api("/api/ask", { method: "POST", headers: { "content-type": "application/json" },
+                                      body: JSON.stringify({ question: q }) });
+    answers.unshift({ q, r });
+    state.textContent = "";
+  } catch (err) { state.textContent = "Error: " + err.message; }
+  askBusy = false;
+  renderAnswers();
+});
+
+function renderAnswers() {
+  const box = clear(document.getElementById("answers"));
+  for (const { q, r } of answers) {
+    const steps = r.steps.map((s) => el("div", { class: "muted" }, s.tool + " " + JSON.stringify(s.input) + " → " + s.status));
+    box.append(el("div", { class: "card" }, el("strong", {}, q), " ", badge(r.status), el("pre", {}, r.answer),
+      el("details", {}, el("summary", { class: "muted" }, "Queries used (" + r.steps.length + ")"), steps)));
+  }
+}
+
+// ---- audit ----
+async function renderAudit() {
+  const rows = await api("/api/audit?limit=150");
+  const t = el("table", {}, el("tr", {}, ...["Time", "Kind", "Tool", "Status", "Actor", "Incident", "Input / output"].map((h) => el("th", {}, h))));
+  for (const r of rows) {
+    t.append(el("tr", {}, el("td", {}, fmt(r.ts)), el("td", {}, r.kind || ""), el("td", {}, r.tool || ""),
+      el("td", {}, r.status ? badge(r.status) : ""), el("td", {}, r.actor || r.user || ""),
+      el("td", {}, r.incident_id || ""), el("td", { class: "muted" },
+        JSON.stringify(r.input || {}).slice(0, 120) + (r.output ? " → " + String(typeof r.output === "string" ? r.output : JSON.stringify(r.output)).slice(0, 120) : ""))));
+  }
+  clear(document.getElementById("auditTable")).append(t);
+}
+
+// ---- refresh loop ----
+async function refresh() {
+  try {
+    const h = await api("/health");
+    document.getElementById("health").textContent = "Agent service: " + h.status;
+    const approvals = await api("/api/approvals");
+    const n = approvals.filter((a) => a.status === "pending").length;
+    const c = document.getElementById("pendingCount"); c.textContent = n; c.hidden = n === 0;
+    if (tab === "incidents") await renderIncidents();
+    else if (tab === "approvals") await renderApprovals();
+    else if (tab === "audit") await renderAudit();
+  } catch (err) {
+    document.getElementById("health").textContent = "Error: " + err.message.slice(0, 80);
+  }
+}
+refresh();
+setInterval(refresh, 3000);
+</script>
 </body>
 </html>

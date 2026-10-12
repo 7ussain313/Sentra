@@ -5,7 +5,7 @@ Approvals are single-use and expire. The web UI (Phase 8) calls `decide()`.
 """
 import threading
 import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -33,9 +33,8 @@ class Approval:
     _event: threading.Event = field(default_factory=threading.Event, repr=False, compare=False)
 
     def public(self) -> dict[str, Any]:
-        d = asdict(self)
-        d.pop("_event", None)
-        return d
+        # Not dataclasses.asdict(): it would try to deep-copy the threading.Event.
+        return {f.name: getattr(self, f.name) for f in fields(self) if not f.name.startswith("_")}
 
 
 class ApprovalStore:

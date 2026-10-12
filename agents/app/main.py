@@ -7,9 +7,9 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
-from app import approvals, container_metrics, sre_agent
+from app import approvals, audit, business_agent, container_metrics, sre_agent
 from app.incidents import store as incident_store
 from app.auth import require_user
 
@@ -122,3 +122,19 @@ def decide_approval(approval_id: str, body: Decision, user: str = Depends(requir
         raise HTTPException(404, "unknown approval")
     except ValueError as e:
         raise HTTPException(409, str(e))
+
+
+@app.get("/api/audit")
+def audit_log(limit: int = 100, _user: str = Depends(require_user)) -> list[dict]:
+    return list(reversed(audit.tail(max(1, min(limit, 500)))))
+
+
+class AskBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    question: str = Field(..., min_length=3, max_length=500)
+
+
+@app.post("/api/ask")
+def ask(body: AskBody, _user: str = Depends(require_user)) -> dict:
+    """Business agent: read-only answers from Odoo."""
+    return business_agent.ask(body.question)

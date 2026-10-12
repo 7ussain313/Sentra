@@ -294,21 +294,21 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Notifications
 
-- [ ] Show new incidents in a live incident list.
-- [ ] Show the agent's steps, diagnosis, and proposed fix on the incident page.
-- [ ] Show the final postmortem on the incident page.
+- [x] Show new incidents in a live incident list.
+- [x] Show the agent's steps, diagnosis, and proposed fix on the incident page.
+- [x] Show the final postmortem on the incident page.
 
 ### Module: Approval Flow
 
-- [ ] Show Approve / Reject buttons for every action.
-- [ ] Pass the decision back to the waiting agent.
-- [ ] Time out and cancel the action if no answer is received.
-- [ ] Record the decision in the audit log.
+- [x] Show Approve / Reject buttons for every action.
+- [x] Pass the decision back to the waiting agent.
+- [x] Time out and cancel the action if no answer is received.
+- [x] Record the decision in the audit log.
 
 ### ✅ Done When
 
-- [ ] The full incident flow works end to end from the web UI.
-- [ ] Rejected actions never run.
+- [x] The full incident flow works end to end from the web UI.
+- [x] Rejected actions never run.
 
 ---
 
@@ -316,28 +316,28 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Agent
 
-- [ ] Define the system prompt (business assistant, read-only).
-- [ ] Reuse the read-only Odoo tools.
-- [ ] Add an Ask page to the web UI.
+- [x] Define the system prompt (business assistant, read-only).
+- [x] Reuse the read-only Odoo tools.
+- [x] Add an Ask page to the web UI.
 
 ### Module: Supported Questions
 
-- [ ] "What was revenue this week?"
-- [ ] "Which invoices are unpaid?"
-- [ ] "How many bookings are scheduled tomorrow?"
-- [ ] "Who are the top 5 customers?"
-- [ ] "Which service is most popular this month?"
+- [x] "What was revenue this week?"
+- [x] "Which invoices are unpaid?"
+- [x] "How many bookings are scheduled tomorrow?"
+- [x] "Who are the top 5 customers?"
+- [x] "Which service is most popular this month?"
 
 ### Module: Guardrails
 
-- [ ] The agent uses the read-only API user only.
-- [ ] The agent cannot create, edit, or delete records.
-- [ ] The agent says when it does not know instead of guessing.
+- [x] The agent uses the read-only API user only.
+- [x] The agent cannot create, edit, or delete records.
+- [x] The agent says when it does not know instead of guessing.
 
 ### ✅ Done When
 
-- [ ] All supported questions return correct answers checked against Odoo.
-- [ ] Write attempts are impossible by design.
+- [ ] All supported questions return correct answers checked against Odoo. (tool queries verified against SQL ground truth by `tests/manual_business_truth.py`; end-to-end answers need a real `ANTHROPIC_API_KEY`)
+- [x] Write attempts are impossible by design.
 
 ---
 

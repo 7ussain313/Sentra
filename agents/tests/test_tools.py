@@ -164,7 +164,8 @@ def test_audit_redacts_secrets_and_truncates(audit_dir, monkeypatch):
 
 def test_classification_and_schemas():
     assert set(registry.READ_TOOLS) == {
-        "read_logs", "check_container_status", "query_metrics", "query_database", "odoo_search"}
+        "read_logs", "check_container_status", "query_metrics", "query_database", "odoo_search",
+        "odoo_aggregate"}
     assert set(registry.ACTION_TOOLS) == {"restart_service", "clear_odoo_cache", "kill_long_running_query"}
     names = {s["name"] for s in registry.schemas()}
     assert names == set(registry.TOOLS)
