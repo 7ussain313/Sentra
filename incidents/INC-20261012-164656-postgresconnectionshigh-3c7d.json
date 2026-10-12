@@ -1,0 +1,375 @@
+{
+  "id": "INC-20261012-164656-postgresconnectionshigh-3c7d",
+  "alertname": "PostgresConnectionsHigh",
+  "status": "fixed",
+  "severity": "warning",
+  "created_at": "2026-10-12T16:46:56.708682+00:00",
+  "updated_at": "2026-10-12T16:47:18.284696+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "PostgresConnectionsHigh",
+      "severity": "warning"
+    },
+    "annotations": {
+      "description": "86% of max_connections is in use.",
+      "summary": "PostgreSQL connections are close to the limit"
+    },
+    "startsAt": "2026-10-12T16:44:37.51878421Z"
+  },
+  "duplicates": 0,
+  "events": [
+    {
+      "ts": "2026-10-12T16:46:56.708844+00:00",
+      "kind": "alert_received",
+      "summary": "PostgreSQL connections are close to the limit"
+    },
+    {
+      "ts": "2026-10-12T16:46:56.714082+00:00",
+      "kind": "agent_started"
+    },
+    {
+      "ts": "2026-10-12T16:46:56.759155+00:00",
+      "kind": "tool_call",
+      "step": 1,
+      "tool": "query_metrics",
+      "input": {
+        "promql": "sum(pg_stat_activity_count) / max(pg_settings_max_connections)"
+      },
+      "status": "ok",
+      "output": "{\"resultType\": \"vector\", \"total_series\": 1, \"truncated\": false, \"series\": [{\"metric\": {}, \"value\": \"0.86\"}]}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:46:56.781119+00:00",
+      "kind": "tool_call",
+      "step": 2,
+      "tool": "query_database",
+      "input": {
+        "query": "select application_name, state, count(*) as n, max(extract(epoch from now() - state_change))::int as idle_seconds from pg_stat_activity where backend_type = 'client backend' group by 1, 2 order by n desc limit 5"
+      },
+      "status": "ok",
+      "output": "{\"columns\": [\"application_name\", \"state\", \"n\", \"idle_seconds\"], \"rows\": [{\"application_name\": \"leaky-client\", \"state\": \"idle in transaction\", \"n\": 83, \"idle_seconds\": 154}, {\"application_name\": \"odoo-1\", \"state\": \"idle\", \"n\": 1, \"idle_seconds\": 9}, {\"application_name\": \"\", \"state\": \"idle\", \"n\": 1, \"idle_seconds\": 7}, {\"application_name\": \"sentra-agent-readonly\", \"state\": \"active\", \"n\": 1, \"idle_seconds\": 0}], \"truncated\": false}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:46:56.804673+00:00",
+      "kind": "tool_call",
+      "step": 3,
+      "tool": "query_database",
+      "input": {
+        "query": "select pid from pg_stat_activity where application_name = 'leaky-client' and state like 'idle in transaction%' order by state_change limit 7"
+      },
+      "status": "ok",
+      "output": "{\"columns\": [\"pid\"], \"rows\": [{\"pid\": 167}, {\"pid\": 168}, {\"pid\": 169}, {\"pid\": 170}, {\"pid\": 171}, {\"pid\": 172}, {\"pid\": 173}], \"truncated\": false}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:46:56.809985+00:00",
+      "kind": "assistant_text",
+      "step": 4,
+      "text": "Terminating leaked 'leaky-client' session 167."
+    },
+    {
+      "ts": "2026-10-12T16:46:56.861239+00:00",
+      "kind": "approval_requested",
+      "step": 4,
+      "approval_id": "0fef865b0d80",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 167
+      },
+      "expires_at": "2026-10-12T16:48:26.831130+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:56.923842+00:00",
+      "kind": "approval_decided",
+      "step": 4,
+      "approval_id": "0fef865b0d80",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:56.974753+00:00",
+      "kind": "tool_call",
+      "step": 4,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 167
+      },
+      "status": "ok",
+      "output": "{\"pid\": 167, \"success\": true}",
+      "approval_id": "0fef865b0d80"
+    },
+    {
+      "ts": "2026-10-12T16:46:56.982628+00:00",
+      "kind": "assistant_text",
+      "step": 5,
+      "text": "Terminating leaked 'leaky-client' session 168."
+    },
+    {
+      "ts": "2026-10-12T16:46:57.035208+00:00",
+      "kind": "approval_requested",
+      "step": 5,
+      "approval_id": "52d1853a0da6",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 168
+      },
+      "expires_at": "2026-10-12T16:48:27.007185+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.145298+00:00",
+      "kind": "approval_decided",
+      "step": 5,
+      "approval_id": "52d1853a0da6",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.205618+00:00",
+      "kind": "tool_call",
+      "step": 5,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 168
+      },
+      "status": "ok",
+      "output": "{\"pid\": 168, \"success\": true}",
+      "approval_id": "52d1853a0da6"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.212088+00:00",
+      "kind": "assistant_text",
+      "step": 6,
+      "text": "Terminating leaked 'leaky-client' session 169."
+    },
+    {
+      "ts": "2026-10-12T16:46:57.250315+00:00",
+      "kind": "approval_requested",
+      "step": 6,
+      "approval_id": "2bcc7d644a32",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 169
+      },
+      "expires_at": "2026-10-12T16:48:27.232836+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.364933+00:00",
+      "kind": "approval_decided",
+      "step": 6,
+      "approval_id": "2bcc7d644a32",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.419666+00:00",
+      "kind": "tool_call",
+      "step": 6,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 169
+      },
+      "status": "ok",
+      "output": "{\"pid\": 169, \"success\": true}",
+      "approval_id": "2bcc7d644a32"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.425018+00:00",
+      "kind": "assistant_text",
+      "step": 7,
+      "text": "Terminating leaked 'leaky-client' session 170."
+    },
+    {
+      "ts": "2026-10-12T16:46:57.463260+00:00",
+      "kind": "approval_requested",
+      "step": 7,
+      "approval_id": "e382b5dd6a0b",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 170
+      },
+      "expires_at": "2026-10-12T16:48:27.441045+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.570800+00:00",
+      "kind": "approval_decided",
+      "step": 7,
+      "approval_id": "e382b5dd6a0b",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.619825+00:00",
+      "kind": "tool_call",
+      "step": 7,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 170
+      },
+      "status": "ok",
+      "output": "{\"pid\": 170, \"success\": true}",
+      "approval_id": "e382b5dd6a0b"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.627106+00:00",
+      "kind": "assistant_text",
+      "step": 8,
+      "text": "Terminating leaked 'leaky-client' session 171."
+    },
+    {
+      "ts": "2026-10-12T16:46:57.684473+00:00",
+      "kind": "approval_requested",
+      "step": 8,
+      "approval_id": "19ec2f378ba8",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 171
+      },
+      "expires_at": "2026-10-12T16:48:27.655401+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.780501+00:00",
+      "kind": "approval_decided",
+      "step": 8,
+      "approval_id": "19ec2f378ba8",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.813897+00:00",
+      "kind": "tool_call",
+      "step": 8,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 171
+      },
+      "status": "ok",
+      "output": "{\"pid\": 171, \"success\": true}",
+      "approval_id": "19ec2f378ba8"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.818971+00:00",
+      "kind": "assistant_text",
+      "step": 9,
+      "text": "Terminating leaked 'leaky-client' session 172."
+    },
+    {
+      "ts": "2026-10-12T16:46:57.866258+00:00",
+      "kind": "approval_requested",
+      "step": 9,
+      "approval_id": "5d9859412422",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 172
+      },
+      "expires_at": "2026-10-12T16:48:27.840628+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:57.984856+00:00",
+      "kind": "approval_decided",
+      "step": 9,
+      "approval_id": "5d9859412422",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:58.018830+00:00",
+      "kind": "tool_call",
+      "step": 9,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 172
+      },
+      "status": "ok",
+      "output": "{\"pid\": 172, \"success\": true}",
+      "approval_id": "5d9859412422"
+    },
+    {
+      "ts": "2026-10-12T16:46:58.028579+00:00",
+      "kind": "assistant_text",
+      "step": 10,
+      "text": "Terminating leaked 'leaky-client' session 173."
+    },
+    {
+      "ts": "2026-10-12T16:46:58.089735+00:00",
+      "kind": "approval_requested",
+      "step": 10,
+      "approval_id": "638ffd17d43d",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 173
+      },
+      "expires_at": "2026-10-12T16:48:28.054393+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:46:58.188943+00:00",
+      "kind": "approval_decided",
+      "step": 10,
+      "approval_id": "638ffd17d43d",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:46:58.236761+00:00",
+      "kind": "tool_call",
+      "step": 10,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 173
+      },
+      "status": "ok",
+      "output": "{\"pid\": 173, \"success\": true}",
+      "approval_id": "638ffd17d43d"
+    },
+    {
+      "ts": "2026-10-12T16:47:18.133690+00:00",
+      "kind": "assistant_text",
+      "step": 11,
+      "text": "Verifying connection usage dropped."
+    },
+    {
+      "ts": "2026-10-12T16:47:18.172195+00:00",
+      "kind": "tool_call",
+      "step": 11,
+      "tool": "query_metrics",
+      "input": {
+        "promql": "sum(pg_stat_activity_count) / max(pg_settings_max_connections)"
+      },
+      "status": "ok",
+      "output": "{\"resultType\": \"vector\", \"total_series\": 1, \"truncated\": false, \"series\": [{\"metric\": {}, \"value\": \"0.78\"}]}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:47:18.177701+00:00",
+      "kind": "assistant_text",
+      "step": 12,
+      "text": "## Diagnosis\nClient 'leaky-client' holds 83 idle-in-transaction connections and exhausts the pool. High confidence.\n## Proposed fix\nTerminated 7 of its sessions; the owner of that client must fix the leak.\n## Result\nUsage dropped below the alert threshold."
+    },
+    {
+      "ts": "2026-10-12T16:47:18.233632+00:00",
+      "kind": "agent_finished",
+      "stop_reason": "final",
+      "status": "fixed",
+      "steps": 12
+    }
+  ],
+  "diagnosis": "## Diagnosis\nClient 'leaky-client' holds 83 idle-in-transaction connections and exhausts the pool. High confidence.\n## Proposed fix\nTerminated 7 of its sessions; the owner of that client must fix the leak.\n## Result\nUsage dropped below the alert threshold.",
+  "proposed_action": {
+    "tool": "kill_long_running_query",
+    "args": {
+      "pid": 173
+    }
+  },
+  "resolved_at": null,
+  "postmortem": "INC-20261012-164656-postgresconnectionshigh-3c7d.md",
+  "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
+}

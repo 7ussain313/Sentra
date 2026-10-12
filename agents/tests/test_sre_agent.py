@@ -292,3 +292,15 @@ def test_pending_approval_never_grants():
     assert approvals.store.check(a.id, "clear_odoo_cache", {}) is False
     with pytest.raises(tools.ApprovalRequired):
         tools.call("clear_odoo_cache", {}, approval_id=a.id)
+
+
+def test_store_ignores_non_incident_json_files(env):
+    """incidents/ also holds scenario reports; a stray list/dict JSON must not break loading."""
+    inc = new_incident()
+    d = env / "incidents"
+    (d / "failure_scenarios.json").write_text('[{"scenario": "x"}]')
+    (d / "notes.json").write_text('{"hello": "world"}')
+    (d / "INC-broken.json").write_text("[1, 2, 3]")
+    incidents.store._items = {}
+    incidents.store._loaded_from = None
+    assert [i["id"] for i in incidents.store.list()] == [inc["id"]]

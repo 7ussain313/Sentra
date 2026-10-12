@@ -13,13 +13,18 @@ groups:
           description: "{{ if $labels.instance }}HTTP probe of {{ $labels.instance }} has failed{{ else }}PostgreSQL is unreachable (pg_up=0){{ end }} for more than 1 minute."
 
       - alert: OdooHighLatency
-        expr: probe_duration_seconds{job="odoo-login"} > 2 and probe_success{job="odoo-login"} == 1
-        for: 2m
+        # Slow login page, or a login page that fails while the Odoo process itself is
+        # up (blocked database, Python error in a module): /web/health does not see those.
+        expr: >-
+          (probe_duration_seconds{job="odoo-login"} > 2 and probe_success{job="odoo-login"} == 1)
+          or
+          (probe_success{job="odoo-login"} == 0 and on() probe_success{job="odoo-health"} == 1)
+        for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "Odoo is slow"
-          description: "Loading the login page takes {{ $value | humanizeDuration }} (threshold 2s)."
+          summary: "Odoo is slow or failing to serve pages"
+          description: "Login page probe: {{ if eq (printf \"%.0f\" $value) \"0\" }}failing while Odoo is up{{ else }}takes {{ $value | humanizeDuration }} (threshold 2s){{ end }}."
 
       - alert: PostgresConnectionsHigh
         expr: sum(pg_stat_activity_count) / max(pg_settings_max_connections) > 0.8

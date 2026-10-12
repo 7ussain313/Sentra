@@ -345,30 +345,30 @@ Odoo ERP (custom car wash module) + Prometheus/Grafana monitoring + two AI agent
 
 ### Module: Odoo Tests
 
-- [ ] Unit tests for state transitions.
-- [ ] Unit tests for invoice generation.
-- [ ] Unit tests for access rights.
+- [x] Unit tests for state transitions.
+- [x] Unit tests for invoice generation.
+- [x] Unit tests for access rights.
 
 ### Module: Agent Tests
 
-- [ ] Unit tests for each tool (including rejected unsafe inputs).
-- [ ] Test the agent loop with mocked LLM responses.
+- [x] Unit tests for each tool (including rejected unsafe inputs).
+- [x] Test the agent loop with mocked LLM responses.
 
 ### Module: Failure Scenarios (break it on purpose)
 
-- [ ] Stop the Odoo container.
-- [ ] Stop the PostgreSQL container.
-- [ ] Fill PostgreSQL connections.
-- [ ] Run a long blocking query.
-- [ ] Introduce a Python error in the custom module.
+- [x] Stop the Odoo container.
+- [x] Stop the PostgreSQL container.
+- [x] Fill PostgreSQL connections.
+- [x] Run a long blocking query.
+- [x] Introduce a Python error in the custom module.
 
 For each scenario, record: alert fired, agent diagnosis, action taken, time to recovery.
 
 ### ✅ Done When
 
-- [ ] All tests pass.
-- [ ] The agent handles every failure scenario.
-- [ ] Results are recorded in `incidents/`.
+- [x] All tests pass.
+- [ ] The agent handles every failure scenario. (all five handled end to end with a scripted-adaptive stand-in for the model; re-run `scripts/failure_scenarios.py` with an `ANTHROPIC_API_KEY` to evaluate the real model)
+- [x] Results are recorded in `incidents/`.
 
 ---
 

@@ -1,0 +1,146 @@
+{
+  "id": "INC-20261012-164312-odoodown-c13f",
+  "alertname": "OdooDown",
+  "status": "fixed",
+  "severity": "critical",
+  "created_at": "2026-10-12T16:43:12.782063+00:00",
+  "updated_at": "2026-10-12T16:43:43.708620+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "OdooDown",
+      "instance": "postgres_exporter:9187",
+      "job": "postgres",
+      "severity": "critical"
+    },
+    "annotations": {
+      "description": "HTTP probe of postgres_exporter:9187 has failed for more than 1 minute.",
+      "summary": "Odoo or its database is not available"
+    },
+    "startsAt": "2026-10-12T16:41:52.51878421Z"
+  },
+  "duplicates": 0,
+  "events": [
+    {
+      "ts": "2026-10-12T16:43:12.782198+00:00",
+      "kind": "alert_received",
+      "summary": "Odoo or its database is not available"
+    },
+    {
+      "ts": "2026-10-12T16:43:12.786816+00:00",
+      "kind": "agent_started"
+    },
+    {
+      "ts": "2026-10-12T16:43:12.963282+00:00",
+      "kind": "tool_call",
+      "step": 1,
+      "tool": "check_container_status",
+      "input": {},
+      "status": "ok",
+      "output": "[{\"name\": \"sentra-agents-1\", \"service\": \"agents\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 249, \"exit_code\": null}, {\"name\": \"sentra-alertmanager-1\", \"service\": \"alertmanager\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5491, \"exit_code\": null}, {\"name\": \"sentra-blackbox-1\", \"service\": \"blackbox\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5491, \"exit_code\": null}, {\"name\": \"sentra-cadvisor-1\", \"service\": \"cadvisor\", \"state\": \"running\", \"health\": \"healthy\", \"restarts\": 0, \"uptime_seconds\": 5285, \"exit_code\": null}, {\"name\": \"sentra-db-1\", \"service\": \"db\", \"state\": \"exited\", \"health\": \"unhealthy\", \"restarts\": 0, \"uptime_seconds\": 0, \"exit_code\": 0}, {\"name\": \"sentra-grafana-1\", \"service\": \"grafana\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5491, \"exit_code\": null}, {\"name\": \"sentra-odoo-1\", \"service\": \"odoo\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 157, \"exit_code\": null}, {\"name\": \"sentra-postgres_exporter-1\", \"service\": \"postgres_exporter\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5491, \"exit_code\": null}, {\"name\": \"sentra-prometheus-1\", \"service\": \"prometheus\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 1476, \"exit_code\": null}]",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:43:13.032760+00:00",
+      "kind": "tool_call",
+      "step": 2,
+      "tool": "read_logs",
+      "input": {
+        "service": "db",
+        "lines": 30
+      },
+      "status": "ok",
+      "output": "{\"service\": \"db\", \"lines\": 30, \"text\": \"2026-10-12T16:38:22.083418239Z 2026-10-12 16:38:22.083 UTC [148] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.084164402Z 2026-10-12 16:38:22.083 UTC [178] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.084203118Z 2026-10-12 16:38:22.084 UTC [153] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.084864142Z 2026-10-12 16:38:22.084 UTC [149] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.085203521Z 2026-10-12 16:38:22.084 UTC [157] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.085220911Z 2026-10-12 16:38:22.085 UTC [144] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.086782027Z 2026-10-12 16:38:22.086 UTC [154] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.089911816Z 2026-10-12 16:38:22.089 UTC [158] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.092510830Z 2026-10-12 16:38:22.092 UTC [161] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.092558781Z 2026-10-12 16:38:22.092 UTC [165] LOG:  unexpected EOF on client connection with an open transaction\\n2026-10-12T16:38:22.095369104Z 2026-10-12 16:38:22.095 UTC [159] LOG:  unexpected EOF on client connection with an open transactio",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:43:13.037307+00:00",
+      "kind": "assistant_text",
+      "step": 3,
+      "text": "The db container is exited; Odoo cannot serve without it."
+    },
+    {
+      "ts": "2026-10-12T16:43:13.084419+00:00",
+      "kind": "approval_requested",
+      "step": 3,
+      "approval_id": "e623d01e317f",
+      "tool": "restart_service",
+      "args": {
+        "service": "db"
+      },
+      "expires_at": "2026-10-12T16:44:43.059265+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:43:13.192680+00:00",
+      "kind": "approval_decided",
+      "step": 3,
+      "approval_id": "e623d01e317f",
+      "tool": "restart_service",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:43:13.457788+00:00",
+      "kind": "tool_call",
+      "step": 3,
+      "tool": "restart_service",
+      "input": {
+        "service": "db"
+      },
+      "status": "ok",
+      "output": "{\"service\": \"db\", \"success\": true, \"state\": \"running\", \"health\": \"starting\"}",
+      "approval_id": "e623d01e317f"
+    },
+    {
+      "ts": "2026-10-12T16:43:43.352832+00:00",
+      "kind": "assistant_text",
+      "step": 4,
+      "text": "Verifying."
+    },
+    {
+      "ts": "2026-10-12T16:43:43.569461+00:00",
+      "kind": "tool_call",
+      "step": 4,
+      "tool": "check_container_status",
+      "input": {},
+      "status": "ok",
+      "output": "[{\"name\": \"sentra-agents-1\", \"service\": \"agents\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 280, \"exit_code\": null}, {\"name\": \"sentra-alertmanager-1\", \"service\": \"alertmanager\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5522, \"exit_code\": null}, {\"name\": \"sentra-blackbox-1\", \"service\": \"blackbox\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5522, \"exit_code\": null}, {\"name\": \"sentra-cadvisor-1\", \"service\": \"cadvisor\", \"state\": \"running\", \"health\": \"healthy\", \"restarts\": 0, \"uptime_seconds\": 5316, \"exit_code\": null}, {\"name\": \"sentra-db-1\", \"service\": \"db\", \"state\": \"running\", \"health\": \"healthy\", \"restarts\": 0, \"uptime_seconds\": 31, \"exit_code\": null}, {\"name\": \"sentra-grafana-1\", \"service\": \"grafana\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5522, \"exit_code\": null}, {\"name\": \"sentra-odoo-1\", \"service\": \"odoo\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 188, \"exit_code\": null}, {\"name\": \"sentra-postgres_exporter-1\", \"service\": \"postgres_exporter\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 5522, \"exit_code\": null}, {\"name\": \"sentra-prometheus-1\", \"service\": \"prometheus\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 1507, \"exit_code\": null}]",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:43:43.605287+00:00",
+      "kind": "tool_call",
+      "step": 5,
+      "tool": "query_metrics",
+      "input": {
+        "promql": "pg_up"
+      },
+      "status": "ok",
+      "output": "{\"resultType\": \"vector\", \"total_series\": 1, \"truncated\": false, \"series\": [{\"metric\": {\"__name__\": \"pg_up\", \"instance\": \"postgres_exporter:9187\", \"job\": \"postgres\"}, \"value\": \"1\"}]}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:43:43.615052+00:00",
+      "kind": "assistant_text",
+      "step": 6,
+      "text": "## Diagnosis\nPostgreSQL container was not running (state exited). Odoo failed as a consequence. High confidence.\n## Proposed fix\nrestart_service(db)\n## Result\ndb is now running."
+    },
+    {
+      "ts": "2026-10-12T16:43:43.659768+00:00",
+      "kind": "agent_finished",
+      "stop_reason": "final",
+      "status": "fixed",
+      "steps": 6
+    }
+  ],
+  "diagnosis": "## Diagnosis\nPostgreSQL container was not running (state exited). Odoo failed as a consequence. High confidence.\n## Proposed fix\nrestart_service(db)\n## Result\ndb is now running.",
+  "proposed_action": {
+    "tool": "restart_service",
+    "args": {
+      "service": "db"
+    }
+  },
+  "resolved_at": null,
+  "postmortem": "INC-20261012-164312-odoodown-c13f.md",
+  "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
+}

@@ -1,0 +1,81 @@
+{
+  "id": "INC-20261012-165212-odoodown-0c00",
+  "alertname": "OdooDown",
+  "status": "diagnosed",
+  "severity": "critical",
+  "created_at": "2026-10-12T16:52:12.835079+00:00",
+  "updated_at": "2026-10-12T16:52:13.267176+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "OdooDown",
+      "instance": "http://odoo:8069/web/health",
+      "job": "odoo-health",
+      "severity": "critical"
+    },
+    "annotations": {
+      "description": "HTTP probe of http://odoo:8069/web/health has failed for more than 1 minute.",
+      "summary": "Odoo or its database is not available"
+    },
+    "startsAt": "2026-10-12T16:50:52.51878421Z"
+  },
+  "duplicates": 0,
+  "events": [
+    {
+      "ts": "2026-10-12T16:52:12.835288+00:00",
+      "kind": "alert_received",
+      "summary": "Odoo or its database is not available"
+    },
+    {
+      "ts": "2026-10-12T16:52:12.841712+00:00",
+      "kind": "agent_started"
+    },
+    {
+      "ts": "2026-10-12T16:52:13.028132+00:00",
+      "kind": "tool_call",
+      "step": 1,
+      "tool": "check_container_status",
+      "input": {},
+      "status": "ok",
+      "output": "[{\"name\": \"sentra-agents-1\", \"service\": \"agents\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 789, \"exit_code\": null}, {\"name\": \"sentra-alertmanager-1\", \"service\": \"alertmanager\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 6031, \"exit_code\": null}, {\"name\": \"sentra-blackbox-1\", \"service\": \"blackbox\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 6031, \"exit_code\": null}, {\"name\": \"sentra-cadvisor-1\", \"service\": \"cadvisor\", \"state\": \"running\", \"health\": \"healthy\", \"restarts\": 0, \"uptime_seconds\": 5825, \"exit_code\": null}, {\"name\": \"sentra-db-1\", \"service\": \"db\", \"state\": \"running\", \"health\": \"healthy\", \"restarts\": 0, \"uptime_seconds\": 540, \"exit_code\": null}, {\"name\": \"sentra-grafana-1\", \"service\": \"grafana\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 6031, \"exit_code\": null}, {\"name\": \"sentra-odoo-1\", \"service\": \"odoo\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 86, \"exit_code\": null}, {\"name\": \"sentra-postgres_exporter-1\", \"service\": \"postgres_exporter\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 6031, \"exit_code\": null}, {\"name\": \"sentra-prometheus-1\", \"service\": \"prometheus\", \"state\": \"running\", \"health\": \"none\", \"restarts\": 0, \"uptime_seconds\": 2016, \"exit_code\": null}]",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:52:13.032665+00:00",
+      "kind": "assistant_text",
+      "step": 2,
+      "text": "Looking for tracebacks."
+    },
+    {
+      "ts": "2026-10-12T16:52:13.154655+00:00",
+      "kind": "tool_call",
+      "step": 2,
+      "tool": "read_logs",
+      "input": {
+        "service": "odoo",
+        "lines": 120
+      },
+      "status": "ok",
+      "output": "{\"service\": \"odoo\", \"lines\": 120, \"text\": \"2026-10-12T16:52:00.687141994Z     raise RuntimeError(\\\"scenario: simulated Python error in custom module\\\")\\n2026-10-12T16:52:00.687144384Z RuntimeError: scenario: simulated Python error in custom module\\n2026-10-12T16:52:00.692240628Z 2026-10-12 16:52:00,686 1 ERROR ? odoo.http: Exception during request handling. \\n2026-10-12T16:52:00.692262067Z Traceback (most recent call last):\\n2026-10-12T16:52:00.692266529Z   File \\\"/usr/lib/python3/dist-packages/odoo/modules/registry.py\\\", line 74, in __new__\\n2026-10-12T16:52:00.692269443Z     return cls.registries[db_name]\\n2026-10-12T16:52:00.692271758Z   File \\\"<decorator-gen-5>\\\", line 2, in __getitem__\\n2026-10-12T16:52:00.692274384Z   File \\\"/usr/lib/python3/dist-packages/odoo/tools/func.py\\\", line 87, in locked\\n2026-10-12T16:52:00.692276758Z     return func(inst, *args, **kwargs)\\n2026-10-12T16:52:00.692278942Z   File \\\"/usr/lib/python3/dist-packages/odoo/tools/lru.py\\\", line 34, in __getitem__\\n2026-10-12T16:52:00.692281320Z     a = self.d[obj]\\n2026-10-12T16:52:00.692283680Z KeyError: 'sentra'\\n2026-10-12T16:52:00.692285770Z \\n2026-10-12T16:52:00.692287833Z During handling of the above exception, another exception occurred:\\n2026-10-12T16:52:00.692290072Z \\n2026-10-12T16:52:00.692292112Z Traceback (most recent call last):\\n2026-10-12T16:52:00.692294200Z   File \\\"/usr/lib/python3/dist-packages/odoo/http.py\\\", line 2411, in __call__\\n2026-10-12T16:52:00.692296559Z     response = reque",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:52:13.159507+00:00",
+      "kind": "assistant_text",
+      "step": 3,
+      "text": "## Diagnosis\nOdoo is running but fails to load the registry because of a Python error in a custom module: `RuntimeError: scenario: simulated Python error in custom module`. High confidence (traceback in logs).\n## Evidence\n- odoo container state: running\n- Traceback in Odoo logs\n## Proposed fix\nnone: escalate. A restart cannot fix a code error; a developer must fix or revert the module change."
+    },
+    {
+      "ts": "2026-10-12T16:52:13.208177+00:00",
+      "kind": "agent_finished",
+      "stop_reason": "final",
+      "status": "diagnosed",
+      "steps": 3
+    }
+  ],
+  "diagnosis": "## Diagnosis\nOdoo is running but fails to load the registry because of a Python error in a custom module: `RuntimeError: scenario: simulated Python error in custom module`. High confidence (traceback in logs).\n## Evidence\n- odoo container state: running\n- Traceback in Odoo logs\n## Proposed fix\nnone: escalate. A restart cannot fix a code error; a developer must fix or revert the module change.",
+  "proposed_action": null,
+  "resolved_at": null,
+  "postmortem": "INC-20261012-165212-odoodown-0c00.md",
+  "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
+}

@@ -1,0 +1,220 @@
+[
+  {
+    "scenario": "odoo_down",
+    "title": "Odoo container stopped",
+    "expected_alert": "OdooDown",
+    "started": "2026-10-12T16:39:11.347486+00:00",
+    "alert_fired_s": 84,
+    "agent_received_s": 84,
+    "agent": {
+      "scenario": "odoo_down",
+      "incident": "INC-20261012-164035-odoodown-bc60",
+      "status": "fixed",
+      "model": "scripted-adaptive (no API key)",
+      "agent_seconds": 26.0,
+      "tools": [
+        "check_container_status:ok",
+        "read_logs:ok",
+        "query_metrics:ok",
+        "restart_service:ok",
+        "check_container_status:ok"
+      ],
+      "actions": [
+        {
+          "tool": "restart_service",
+          "args": {
+            "service": "odoo"
+          },
+          "approved": true
+        }
+      ],
+      "postmortem": "INC-20261012-164035-odoodown-bc60.md",
+      "diagnosis": "## Diagnosis\nThe odoo container was not running (state exited, exit 0). High confidence.\n## Evidence\n- container status\n- probe_success = 0\n## Proposed fix\nrestart_service(odoo)\n## Result\nOdoo is now running."
+    },
+    "agent_done_s": 111,
+    "recovered_s": 111,
+    "resolved_notice_s": 142
+  },
+  {
+    "scenario": "db_down",
+    "title": "PostgreSQL container stopped",
+    "expected_alert": "OdooDown",
+    "started": "2026-10-12T16:41:37.655672+00:00",
+    "alert_fired_s": 89,
+    "agent_received_s": 95,
+    "agent": {
+      "scenario": "db_down",
+      "incident": "INC-20261012-164312-odoodown-c13f",
+      "status": "fixed",
+      "model": "scripted-adaptive (no API key)",
+      "agent_seconds": 30.9,
+      "tools": [
+        "check_container_status:ok",
+        "read_logs:ok",
+        "restart_service:ok",
+        "check_container_status:ok",
+        "query_metrics:ok"
+      ],
+      "actions": [
+        {
+          "tool": "restart_service",
+          "args": {
+            "service": "db"
+          },
+          "approved": true
+        }
+      ],
+      "postmortem": "INC-20261012-164312-odoodown-c13f.md",
+      "diagnosis": "## Diagnosis\nPostgreSQL container was not running (state exited). Odoo failed as a consequence. High confidence.\n## Proposed fix\nrestart_service(db)\n## Result\ndb is now running."
+    },
+    "agent_done_s": 126,
+    "recovered_s": 126,
+    "resolved_notice_s": 157
+  },
+  {
+    "scenario": "connections_high",
+    "title": "PostgreSQL connections nearly exhausted (leaked sessions)",
+    "expected_alert": "PostgresConnectionsHigh",
+    "started": "2026-10-12T16:44:18.758963+00:00",
+    "alert_fired_s": 148,
+    "agent_received_s": 157,
+    "agent": {
+      "scenario": "connections_high",
+      "incident": "INC-20261012-164656-postgresconnectionshigh-3c7d",
+      "status": "fixed",
+      "model": "scripted-adaptive (no API key)",
+      "agent_seconds": 21.6,
+      "tools": [
+        "query_metrics:ok",
+        "query_database:ok",
+        "query_database:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "kill_long_running_query:ok",
+        "query_metrics:ok"
+      ],
+      "actions": [
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 167
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 168
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 169
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 170
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 171
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 172
+          },
+          "approved": true
+        },
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 173
+          },
+          "approved": true
+        }
+      ],
+      "postmortem": "INC-20261012-164656-postgresconnectionshigh-3c7d.md",
+      "diagnosis": "## Diagnosis\nClient 'leaky-client' holds 83 idle-in-transaction connections and exhausts the pool. High confidence.\n## Proposed fix\nTerminated 7 of its sessions; the owner of that client must fix the leak.\n## Result\nUsage dropped below the alert threshold."
+    },
+    "agent_done_s": 180,
+    "recovered_s": 182,
+    "resolved_notice_s": 218
+  },
+  {
+    "scenario": "blocking_query",
+    "title": "Long-held lock blocks Odoo's queries",
+    "expected_alert": "OdooHighLatency",
+    "started": "2026-10-12T16:48:01.386390+00:00",
+    "alert_fired_s": 93,
+    "agent_received_s": 100,
+    "agent": {
+      "scenario": "blocking_query",
+      "incident": "INC-20261012-164941-odoohighlatency-ed40",
+      "status": "fixed",
+      "model": "scripted-adaptive (no API key)",
+      "agent_seconds": 20.4,
+      "tools": [
+        "query_metrics:ok",
+        "query_database:ok",
+        "query_database:ok",
+        "kill_long_running_query:ok",
+        "query_metrics:ok"
+      ],
+      "actions": [
+        {
+          "tool": "kill_long_running_query",
+          "args": {
+            "pid": 671
+          },
+          "approved": true
+        }
+      ],
+      "postmortem": "INC-20261012-164941-odoohighlatency-ed40.md",
+      "diagnosis": "## Diagnosis\nA long-held lock by 'nightly-report-job' (pid 671) blocked Odoo's queries. High confidence.\n## Proposed fix\nTerminate the blocking session.\n## Result\nLogin page responds again."
+    },
+    "agent_done_s": 121,
+    "recovered_s": 121,
+    "resolved_notice_s": 161
+  },
+  {
+    "scenario": "python_error",
+    "title": "Python error in the custom module",
+    "expected_alert": "OdooDown",
+    "started": "2026-10-12T16:50:46.184716+00:00",
+    "alert_fired_s": 74,
+    "agent_received_s": 86,
+    "agent": {
+      "scenario": "python_error",
+      "incident": "INC-20261012-165212-odoodown-0c00",
+      "status": "diagnosed",
+      "model": "scripted-adaptive (no API key)",
+      "agent_seconds": 0.4,
+      "tools": [
+        "check_container_status:ok",
+        "read_logs:ok"
+      ],
+      "actions": [],
+      "postmortem": "INC-20261012-165212-odoodown-0c00.md",
+      "diagnosis": "## Diagnosis\nOdoo is running but fails to load the registry because of a Python error in a custom module: `RuntimeError: scenario: simulated Python error in custom module`. High confidence (traceback in logs).\n## Evidence\n- odoo container state: running\n- Traceback in Odoo logs\n## Proposed fix\nnone: escalate. A restart cannot fix a code error; a developer must fix or revert the module change."
+    },
+    "agent_done_s": 87,
+    "manual_recovery": true,
+    "recovered_s": 92,
+    "resolved_notice_s": 144
+  }
+]

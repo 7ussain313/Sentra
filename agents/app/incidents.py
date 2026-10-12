@@ -37,11 +37,12 @@ class IncidentStore:
 
     def _load(self, d: Path) -> None:
         self._items = {}
-        for f in sorted(d.glob("*.json")):
+        # Only incident files; the folder also holds postmortems and scenario reports.
+        for f in sorted(d.glob("INC-*.json")):
             try:
                 inc = json.loads(f.read_text(encoding="utf-8"))
                 self._items[inc["id"]] = inc
-            except (OSError, ValueError, KeyError):
+            except (OSError, ValueError, KeyError, TypeError):
                 continue
         self._loaded_from = d
 

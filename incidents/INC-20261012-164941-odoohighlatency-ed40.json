@@ -1,0 +1,149 @@
+{
+  "id": "INC-20261012-164941-odoohighlatency-ed40",
+  "alertname": "OdooHighLatency",
+  "status": "fixed",
+  "severity": "warning",
+  "created_at": "2026-10-12T16:49:41.557173+00:00",
+  "updated_at": "2026-10-12T16:50:01.912327+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "OdooHighLatency",
+      "instance": "http://odoo:8069/web/login",
+      "job": "odoo-login",
+      "severity": "warning"
+    },
+    "annotations": {
+      "description": "Login page probe: failing while Odoo is up.",
+      "summary": "Odoo is slow or failing to serve pages"
+    },
+    "startsAt": "2026-10-12T16:48:22.51878421Z"
+  },
+  "duplicates": 0,
+  "events": [
+    {
+      "ts": "2026-10-12T16:49:41.557370+00:00",
+      "kind": "alert_received",
+      "summary": "Odoo is slow or failing to serve pages"
+    },
+    {
+      "ts": "2026-10-12T16:49:41.563620+00:00",
+      "kind": "agent_started"
+    },
+    {
+      "ts": "2026-10-12T16:49:41.609422+00:00",
+      "kind": "tool_call",
+      "step": 1,
+      "tool": "query_metrics",
+      "input": {
+        "promql": "probe_duration_seconds{job=\"odoo-login\"}"
+      },
+      "status": "ok",
+      "output": "{\"resultType\": \"vector\", \"total_series\": 1, \"truncated\": false, \"series\": [{\"metric\": {\"__name__\": \"probe_duration_seconds\", \"instance\": \"http://odoo:8069/web/login\", \"job\": \"odoo-login\"}, \"value\": \"9.509047795\"}]}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:49:41.638045+00:00",
+      "kind": "tool_call",
+      "step": 2,
+      "tool": "query_database",
+      "input": {
+        "query": "select pid as blocked_pid, pg_blocking_pids(pid) as blockers, wait_event_type, extract(epoch from now() - query_start)::int as waiting_seconds from pg_stat_activity where cardinality(pg_blocking_pids(pid)) > 0 limit 10"
+      },
+      "status": "ok",
+      "output": "{\"columns\": [\"blocked_pid\", \"blockers\", \"wait_event_type\", \"waiting_seconds\"], \"rows\": [{\"blocked_pid\": 34, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 85}, {\"blocked_pid\": 701, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 70}, {\"blocked_pid\": 729, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 55}, {\"blocked_pid\": 758, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 40}, {\"blocked_pid\": 787, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 25}, {\"blocked_pid\": 816, \"blockers\": [671], \"wait_event_type\": \"Lock\", \"waiting_seconds\": 10}], \"truncated\": false}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:49:41.666330+00:00",
+      "kind": "tool_call",
+      "step": 3,
+      "tool": "query_database",
+      "input": {
+        "query": "select pid, application_name, state, extract(epoch from now() - xact_start)::int as xact_age_s from pg_stat_activity where pid = 671"
+      },
+      "status": "ok",
+      "output": "{\"columns\": [\"pid\", \"application_name\", \"state\", \"xact_age_s\"], \"rows\": [{\"pid\": 671, \"application_name\": \"nightly-report-job\", \"state\": \"idle in transaction\", \"xact_age_s\": 100}], \"truncated\": false}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:49:41.673391+00:00",
+      "kind": "assistant_text",
+      "step": 4,
+      "text": "Session 671 ('nightly-report-job') is blocking 6 others and has been in a transaction for 100s."
+    },
+    {
+      "ts": "2026-10-12T16:49:41.718405+00:00",
+      "kind": "approval_requested",
+      "step": 4,
+      "approval_id": "7c21e3db157e",
+      "tool": "kill_long_running_query",
+      "args": {
+        "pid": 671
+      },
+      "expires_at": "2026-10-12T16:51:11.694637+00:00"
+    },
+    {
+      "ts": "2026-10-12T16:49:41.773800+00:00",
+      "kind": "approval_decided",
+      "step": 4,
+      "approval_id": "7c21e3db157e",
+      "tool": "kill_long_running_query",
+      "status": "approved",
+      "decided_by": "scenario-runner"
+    },
+    {
+      "ts": "2026-10-12T16:49:41.823029+00:00",
+      "kind": "tool_call",
+      "step": 4,
+      "tool": "kill_long_running_query",
+      "input": {
+        "pid": 671
+      },
+      "status": "ok",
+      "output": "{\"pid\": 671, \"success\": true}",
+      "approval_id": "7c21e3db157e"
+    },
+    {
+      "ts": "2026-10-12T16:50:01.723488+00:00",
+      "kind": "assistant_text",
+      "step": 5,
+      "text": "Verifying."
+    },
+    {
+      "ts": "2026-10-12T16:50:01.766899+00:00",
+      "kind": "tool_call",
+      "step": 5,
+      "tool": "query_metrics",
+      "input": {
+        "promql": "probe_success{job=\"odoo-login\"}"
+      },
+      "status": "ok",
+      "output": "{\"resultType\": \"vector\", \"total_series\": 1, \"truncated\": false, \"series\": [{\"metric\": {\"__name__\": \"probe_success\", \"instance\": \"http://odoo:8069/web/login\", \"job\": \"odoo-login\"}, \"value\": \"1\"}]}",
+      "approval_id": null
+    },
+    {
+      "ts": "2026-10-12T16:50:01.773937+00:00",
+      "kind": "assistant_text",
+      "step": 6,
+      "text": "## Diagnosis\nA long-held lock by 'nightly-report-job' (pid 671) blocked Odoo's queries. High confidence.\n## Proposed fix\nTerminate the blocking session.\n## Result\nLogin page responds again."
+    },
+    {
+      "ts": "2026-10-12T16:50:01.832489+00:00",
+      "kind": "agent_finished",
+      "stop_reason": "final",
+      "status": "fixed",
+      "steps": 6
+    }
+  ],
+  "diagnosis": "## Diagnosis\nA long-held lock by 'nightly-report-job' (pid 671) blocked Odoo's queries. High confidence.\n## Proposed fix\nTerminate the blocking session.\n## Result\nLogin page responds again.",
+  "proposed_action": {
+    "tool": "kill_long_running_query",
+    "args": {
+      "pid": 671
+    }
+  },
+  "resolved_at": null,
+  "postmortem": "INC-20261012-164941-odoohighlatency-ed40.md",
+  "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
+}

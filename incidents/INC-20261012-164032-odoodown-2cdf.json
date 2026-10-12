@@ -1,0 +1,57 @@
+{
+  "id": "INC-20261012-164032-odoodown-2cdf",
+  "alertname": "OdooDown",
+  "status": "agent_unavailable",
+  "severity": "critical",
+  "created_at": "2026-10-12T16:40:32.612592+00:00",
+  "updated_at": "2026-10-12T16:43:12.110852+00:00",
+  "alert": {
+    "status": "firing",
+    "labels": {
+      "alertname": "OdooDown",
+      "instance": "http://odoo:8069/web/health",
+      "job": "odoo-health",
+      "severity": "critical"
+    },
+    "annotations": {
+      "description": "HTTP probe of http://odoo:8069/web/health has failed for more than 1 minute.",
+      "summary": "Odoo or its database is not available"
+    },
+    "startsAt": "2026-10-12T16:40:22.518Z",
+    "endsAt": "0001-01-01T00:00:00Z",
+    "generatorURL": "http://e2169e9ef1fd:9090/graph?g0.expr=%28probe_success%7Bjob%3D%22odoo-health%22%7D+%3D%3D+0%29+or+%28pg_up+%3D%3D+0%29&g0.tab=1",
+    "fingerprint": "d8738cef1928c90d"
+  },
+  "duplicates": 1,
+  "events": [
+    {
+      "ts": "2026-10-12T16:40:32.613053+00:00",
+      "kind": "alert_received",
+      "summary": "Odoo or its database is not available"
+    },
+    {
+      "ts": "2026-10-12T16:40:32.622870+00:00",
+      "kind": "llm_error",
+      "error": "ANTHROPIC_API_KEY is not configured"
+    },
+    {
+      "ts": "2026-10-12T16:40:32.673563+00:00",
+      "kind": "agent_finished",
+      "stop_reason": "llm_unavailable",
+      "status": "agent_unavailable"
+    },
+    {
+      "ts": "2026-10-12T16:41:32.395995+00:00",
+      "kind": "alert_resolved"
+    },
+    {
+      "ts": "2026-10-12T16:43:12.110819+00:00",
+      "kind": "duplicate_alert"
+    }
+  ],
+  "diagnosis": "Agent unavailable: ANTHROPIC_API_KEY is not configured. Raw alert: HTTP probe of http://odoo:8069/web/health has failed for more than 1 minute.",
+  "proposed_action": null,
+  "resolved_at": "2026-10-12T16:40:52.518Z",
+  "postmortem": "INC-20261012-164032-odoodown-2cdf.md",
+  "postmortem_narrative": "## Summary\nAlert OdooDown fired and the SRE agent investigated (final status: agent_unavailable).\n\n## Root cause\nAgent unavailable: ANTHROPIC_API_KEY is not configured. Raw alert: HTTP probe of http://odoo:8069/web/health has failed for more than 1 minute.\n\n## Resolution\nNo automated fix was applied. A human should review the diagnosis above.\n\n## Prevention\nNot generated automatically (the language model was unavailable); review the timeline.\n"
+}

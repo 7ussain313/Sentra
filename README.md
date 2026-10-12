@@ -82,3 +82,18 @@ The business agent only has `odoo_search` and `odoo_aggregate`, which use the re
 `sentra_agent` API user with fixed RPC methods (`search_read`, `read_group`); Odoo itself
 rejects any write from that user. `agents/tests/manual_business_truth.py` checks the five
 supported questions' queries against SQL ground truth.
+
+## Testing and failure scenarios
+
+| Suite | How to run | Count |
+|-------|-----------|-------|
+| Odoo module (state machine, invoicing, access rights, constraints) | create a scratch DB, then `odoo -d <db> -i carwash --test-enable --test-tags /carwash --stop-after-init` inside the `odoo` container | 26 |
+| Agent service (tools, safety rules, loop with a scripted LLM, approval API, UI, business agent) | `pip install -r agents/requirements-dev.txt && pytest agents/tests` (or run inside the `agents` container) | 94 |
+| Live data check for the business questions | `python tests/manual_business_truth.py` in the `agents` container | 5 questions + write denial |
+| Failure scenarios (break the live stack on purpose) | `python scripts/failure_scenarios.py [scenario ...]` | 5 scenarios |
+
+`scripts/failure_scenarios.py` stops Odoo, stops PostgreSQL, leaks connections, holds a blocking lock,
+and breaks the custom module; for each it records alert time, agent diagnosis and action, and time to
+recovery in `incidents/FAILURE_SCENARIOS.md`. Without an `ANTHROPIC_API_KEY` the reasoning step is a
+scripted stand-in that drives the real tools, which validates alerts, evidence and actions but not a
+real model's judgement; with a key set the same harness runs the real model.

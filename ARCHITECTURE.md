@@ -98,6 +98,11 @@ blackbox / postgres_exporter / cAdvisor
 ```
 
 Alerts: `OdooDown`, `OdooHighLatency`, `PostgresConnectionsHigh`, `ContainerMemoryHigh`.
+
+* `OdooDown`: the `/web/health` probe fails (container down, HTTP 500s from a Python error in a module) **or** `pg_up == 0` (Odoo's health endpoint still answers 200 when PostgreSQL is gone).
+* `OdooHighLatency`: the login page takes more than 2 s, **or** it fails while `/web/health` is still up (blocked database).
+* `PostgresConnectionsHigh`: more than 80% of `max_connections` in use.
+* `ContainerMemoryHigh`: working set above 1.5 GiB for any Sentra container.
 Alertmanager groups by `alertname`, repeats every 30 minutes while firing, and also sends `resolved` notices.
 
 ---

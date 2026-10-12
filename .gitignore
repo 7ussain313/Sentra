@@ -27,3 +27,6 @@ audit/*
 Thumbs.db
 .idea/
 .vscode/
+
+# failure-scenario scratch
+scripts/.service.py.bak
