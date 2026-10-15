@@ -13,7 +13,11 @@ class Settings(BaseSettings):
     incidents_dir: Path = Path("/app/incidents")
     compose_project: str = "sentra"
 
+    # "anthropic" (default) or "openai_compat" (Gemini/Groq/Ollama via LLM_BASE_URL + LLM_API_KEY)
+    llm_provider: str = "anthropic"
     anthropic_api_key: str = ""
+    llm_api_key: str = ""
+    llm_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     llm_model: str = "claude-sonnet-5-5"
     max_steps: int = 8
     approval_timeout_seconds: int = 600

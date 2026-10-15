@@ -4,7 +4,7 @@
   "status": "fixed",
   "severity": "critical",
   "created_at": "2026-10-12T16:43:12.782063+00:00",
-  "updated_at": "2026-10-12T16:43:43.708620+00:00",
+  "updated_at": "2026-10-14T20:02:59.258473+00:00",
   "alert": {
     "status": "firing",
     "labels": {
@@ -131,6 +131,10 @@
       "stop_reason": "final",
       "status": "fixed",
       "steps": 6
+    },
+    {
+      "ts": "2026-10-14T20:02:59.206205+00:00",
+      "kind": "alert_resolved"
     }
   ],
   "diagnosis": "## Diagnosis\nPostgreSQL container was not running (state exited). Odoo failed as a consequence. High confidence.\n## Proposed fix\nrestart_service(db)\n## Result\ndb is now running.",
@@ -140,7 +144,7 @@
       "service": "db"
     }
   },
-  "resolved_at": null,
+  "resolved_at": "2026-10-14T20:02:22.518Z",
   "postmortem": "INC-20261012-164312-odoodown-c13f.md",
   "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
 }

@@ -205,7 +205,8 @@ def main() -> None:
     cfg = SCENARIOS[scenario]
     sre_agent.install_approval_gate()
     inc = incidents.store.create(cfg["alert"], firing_alert(cfg["alert"]))
-    real = bool(get_settings().anthropic_api_key)
+    cfg_s = get_settings()
+    real = bool(cfg_s.llm_api_key if cfg_s.llm_provider == "openai_compat" else cfg_s.anthropic_api_key)
     llm = None if real else AdaptiveScripted(PLANS[scenario]())
 
     decided: list[dict] = []
@@ -231,7 +232,7 @@ def main() -> None:
     tool_calls = [e for e in final["events"] if e["kind"] == "tool_call"]
     print("RESULT " + json.dumps({
         "scenario": scenario, "incident": inc["id"], "status": final["status"],
-        "model": "anthropic:" + get_settings().llm_model if real else "scripted-adaptive (no API key)",
+        "model": f"{cfg_s.llm_provider}:{cfg_s.llm_model}" if real else "scripted-adaptive (no API key)",
         "agent_seconds": round(time.time() - started, 1),
         "tools": [t["tool"] + ":" + t["status"] for t in tool_calls],
         "actions": decided, "postmortem": final.get("postmortem"),

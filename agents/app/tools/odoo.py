@@ -23,6 +23,30 @@ def _scalar_ok(v: Any) -> bool:
     return v is None or isinstance(v, (str, int, float, bool))
 
 
+_TERM_RE = re.compile(
+    r"^\s*([a-z_][a-z0-9_.]*)\s+(not ilike|not like|not in|=ilike|=like|ilike|like|in|>=|<=|!=|=|>|<)\s+(.+?)\s*$")
+
+
+def _parse_term_string(term: str) -> list | None:
+    """Models often write a term as "scheduled_date >= 2026-10-16 00:00:00". Turn a simple
+    one-scalar string into [field, operator, value]; the result is validated like any other term."""
+    m = _TERM_RE.match(term)
+    if not m or m.group(2) in ("in", "not in"):
+        return None
+    field, op, raw = m.groups()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in "'\"":
+        value: Any = raw[1:-1]
+    elif raw.lower() in ("true", "false"):
+        value = raw.lower() == "true"
+    elif re.fullmatch(r"-?\d+", raw):
+        value = int(raw)
+    elif re.fullmatch(r"-?\d+\.\d+", raw):
+        value = float(raw)
+    else:
+        value = raw
+    return [field, op, value]
+
+
 def validate_domain(domain: list) -> list:
     if len(domain) > 20:
         raise ToolError("Domain too long (max 20 terms)")
@@ -30,9 +54,13 @@ def validate_domain(domain: list) -> list:
     for term in domain:
         if isinstance(term, str):
             if term not in LOGIC:
-                raise ToolError(f"Invalid domain operator: {term!r}")
-            out.append(term)
-            continue
+                parsed = _parse_term_string(term)
+                if parsed is None:
+                    raise ToolError(f"Invalid domain operator: {term!r}")
+                term = parsed
+            else:
+                out.append(term)
+                continue
         if not (isinstance(term, (list, tuple)) and len(term) == 3):
             raise ToolError("Each domain term must be [field, operator, value]")
         f, op, v = term
@@ -114,7 +142,8 @@ TOOL = Tool(
     name="odoo_search",
     description=(
         "Read Odoo records (search_read only) through the read-only agent user. Models: "
-        "carwash.*, res.partner, account.move. Domain is a list of [field, operator, value]."
+        "carwash.*, res.partner, account.move. Domain is a list of [field, operator, value] lists, "
+        "e.g. [['state','=','done'],['scheduled_date','>=','2026-10-01 00:00:00']]."
     ),
     model=OdooSearchInput,
     fn=odoo_search,
@@ -170,8 +199,6 @@ def odoo_aggregate(p: OdooAggregateInput) -> dict:
     domain = validate_domain(p.domain)
     if not cfg.odoo_agent_api_key:
         raise ToolError("ODOO_AGENT_API_KEY is not configured")
-    if not p.group_by and not p.aggregates:
-        raise ToolError("Give at least one group_by or aggregate")
     url = cfg.odoo_url.rstrip("/")
     kwargs: dict[str, Any] = {"lazy": False, "limit": p.limit}
     if p.order_by:
@@ -191,7 +218,9 @@ def odoo_aggregate(p: OdooAggregateInput) -> dict:
         raise ToolError(f"Odoo is not reachable: {e}") from e
     clean = [{k: v for k, v in g.items() if not k.startswith("__") or k == "__count"}
              for g in groups]
-    return {"model": p.model, "count": len(clean), "groups": clean}
+    # "record_count" is how many records matched; "group_count" only how many groups came back.
+    return {"model": p.model, "record_count": sum(int(g.get("__count") or 0) for g in clean),
+            "group_count": len(clean), "groups": clean}
 
 
 AGG_TOOL = Tool(
@@ -199,7 +228,11 @@ AGG_TOOL = Tool(
     description=(
         "Read-only aggregation in Odoo (read_group): sum/avg/min/max/count, optionally grouped. "
         "aggregates like 'amount_total:sum'; group_by like 'partner_id' or 'scheduled_date:day'. "
-        "Same model allowlist and domain format as odoo_search. Prefer this over summing records yourself."
+        "Same model allowlist and domain format as odoo_search. With no aggregates it counts records; "
+        "read the answer from 'record_count' (matching records), not 'group_count'. "
+        "Example: model='carwash.booking', domain=[['scheduled_date','>=','2026-10-16 00:00:00'], "
+        "['scheduled_date','<=','2026-10-16 23:59:59']] counts tomorrow's bookings. "
+        "Prefer this over summing records yourself."
     ),
     model=OdooAggregateInput,
     fn=odoo_aggregate,

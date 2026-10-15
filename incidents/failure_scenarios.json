@@ -3,19 +3,19 @@
     "scenario": "odoo_down",
     "title": "Odoo container stopped",
     "expected_alert": "OdooDown",
-    "started": "2026-10-12T16:39:11.347486+00:00",
-    "alert_fired_s": 84,
-    "agent_received_s": 84,
+    "started": "2026-10-14T19:58:11.855966+00:00",
+    "alert_fired_s": 89,
+    "agent_received_s": 89,
     "agent": {
       "scenario": "odoo_down",
-      "incident": "INC-20261012-164035-odoodown-bc60",
+      "incident": "INC-20261014-195940-odoodown-72b3",
       "status": "fixed",
-      "model": "scripted-adaptive (no API key)",
-      "agent_seconds": 26.0,
+      "model": "openai_compat:gemini-3.1-flash-lite",
+      "agent_seconds": 17.7,
       "tools": [
         "check_container_status:ok",
         "read_logs:ok",
-        "query_metrics:ok",
+        "read_logs:ok",
         "restart_service:ok",
         "check_container_status:ok"
       ],
@@ -28,32 +28,31 @@
           "approved": true
         }
       ],
-      "postmortem": "INC-20261012-164035-odoodown-bc60.md",
-      "diagnosis": "## Diagnosis\nThe odoo container was not running (state exited, exit 0). High confidence.\n## Evidence\n- container status\n- probe_success = 0\n## Proposed fix\nrestart_service(odoo)\n## Result\nOdoo is now running."
+      "postmortem": "INC-20261014-195940-odoodown-72b3.md",
+      "diagnosis": "## Diagnosis\nThe `odoo` container crashed due to an `OperationalError` (database connection failure) caused by a database shutdown, evidenced by the PostgreSQL logs receiving a \"fast shutdown request\" at `2026-10-14T19:54:03`. The Odoo container exited as a result.\n\n## Evidence\n- `check_container_status` showed `sentra-odoo-1` in `exited` state.\n- `odoo` logs showed repetitive `psycopg2.OperationalError: server closed the connection unexpectedly` followed by the service failing to connect to the database.\n- `db` logs confirmed that at `19:54:03` it received a \"fast shutdown request\", which shu"
     },
-    "agent_done_s": 111,
-    "recovered_s": 111,
-    "resolved_notice_s": 142
+    "agent_done_s": 106,
+    "recovered_s": 106,
+    "resolved_notice_s": 140
   },
   {
     "scenario": "db_down",
     "title": "PostgreSQL container stopped",
     "expected_alert": "OdooDown",
-    "started": "2026-10-12T16:41:37.655672+00:00",
-    "alert_fired_s": 89,
-    "agent_received_s": 95,
+    "started": "2026-10-14T20:00:36.466015+00:00",
+    "alert_fired_s": 83,
+    "agent_received_s": 90,
     "agent": {
       "scenario": "db_down",
-      "incident": "INC-20261012-164312-odoodown-c13f",
+      "incident": "INC-20261014-200206-odoodown-900a",
       "status": "fixed",
-      "model": "scripted-adaptive (no API key)",
-      "agent_seconds": 30.9,
+      "model": "openai_compat:gemini-3.1-flash-lite",
+      "agent_seconds": 16.0,
       "tools": [
         "check_container_status:ok",
         "read_logs:ok",
         "restart_service:ok",
-        "check_container_status:ok",
-        "query_metrics:ok"
+        "check_container_status:ok"
       ],
       "actions": [
         {
@@ -64,157 +63,150 @@
           "approved": true
         }
       ],
-      "postmortem": "INC-20261012-164312-odoodown-c13f.md",
-      "diagnosis": "## Diagnosis\nPostgreSQL container was not running (state exited). Odoo failed as a consequence. High confidence.\n## Proposed fix\nrestart_service(db)\n## Result\ndb is now running."
+      "postmortem": "INC-20261014-200206-odoodown-900a.md",
+      "diagnosis": "## Diagnosis\nThe database (`db`) container exited, causing the Odoo service to lose its database connection. The `db` logs indicate it received a \"fast shutdown request\" at 20:00:35, which caused it to stop. This was not a crash but an intentional shutdown.\n\n## Evidence\n*   `check_container_status` showed the `db` container in an `exited` state.\n*   `db` logs show `LOG: received fast shutdown request` at `2026-10-14 20:00:35 UTC`, which matches the alert time.\n\n## Proposed fix\nI have already triggered `restart_service(db)`. This is the standard procedure to recover from an unexpected database "
     },
-    "agent_done_s": 126,
-    "recovered_s": 126,
-    "resolved_notice_s": 157
+    "agent_done_s": 107,
+    "recovered_s": 107,
+    "resolved_notice_s": 144
   },
   {
     "scenario": "connections_high",
     "title": "PostgreSQL connections nearly exhausted (leaked sessions)",
     "expected_alert": "PostgresConnectionsHigh",
-    "started": "2026-10-12T16:44:18.758963+00:00",
-    "alert_fired_s": 148,
-    "agent_received_s": 157,
+    "started": "2026-10-14T20:03:04.816032+00:00",
+    "alert_fired_s": 138,
+    "agent_received_s": 150,
     "agent": {
       "scenario": "connections_high",
-      "incident": "INC-20261012-164656-postgresconnectionshigh-3c7d",
-      "status": "fixed",
-      "model": "scripted-adaptive (no API key)",
-      "agent_seconds": 21.6,
+      "incident": "INC-20261014-200534-postgresconnectionshigh-225d",
+      "status": "escalated",
+      "model": "openai_compat:gemini-3.1-flash-lite",
+      "agent_seconds": 47.9,
       "tools": [
-        "query_metrics:ok",
+        "check_container_status:ok",
+        "query_database:ok",
+        "read_logs:ok",
+        "query_database:ok",
+        "query_database:ok",
+        "query_database:rejected",
         "query_database:ok",
         "query_database:ok",
         "kill_long_running_query:ok",
+        "query_database:ok",
         "kill_long_running_query:ok",
         "kill_long_running_query:ok",
         "kill_long_running_query:ok",
-        "kill_long_running_query:ok",
-        "kill_long_running_query:ok",
-        "kill_long_running_query:ok",
-        "query_metrics:ok"
+        "kill_long_running_query:ok"
       ],
       "actions": [
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 167
+            "pid": 150
           },
           "approved": true
         },
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 168
+            "pid": 151
           },
           "approved": true
         },
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 169
+            "pid": 152
           },
           "approved": true
         },
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 170
+            "pid": 153
           },
           "approved": true
         },
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 171
-          },
-          "approved": true
-        },
-        {
-          "tool": "kill_long_running_query",
-          "args": {
-            "pid": 172
-          },
-          "approved": true
-        },
-        {
-          "tool": "kill_long_running_query",
-          "args": {
-            "pid": 173
+            "pid": 154
           },
           "approved": true
         }
       ],
-      "postmortem": "INC-20261012-164656-postgresconnectionshigh-3c7d.md",
-      "diagnosis": "## Diagnosis\nClient 'leaky-client' holds 83 idle-in-transaction connections and exhausts the pool. High confidence.\n## Proposed fix\nTerminated 7 of its sessions; the owner of that client must fix the leak.\n## Result\nUsage dropped below the alert threshold."
+      "postmortem": "INC-20261014-200534-postgresconnectionshigh-225d.md",
+      "diagnosis": "## Diagnosis\nPostgreSQL connections are saturated (92/100 active connections) due to a large number of \"idle in transaction\" sessions originating from the Odoo container. The database is functional, but the connection pool is nearly exhausted, which prevents new operations. Confidence: High.\n\n## Evidence\n*   **System State:** `pg_stat_activity` shows 92 current connections, 87-92% of the default `max_connections` (100).\n*   **Transaction Status:** A significant cluster of sessions are stuck in \"idle in transaction\" state, all executing a simple `select 1` query.\n*   **Odoo Behavior:** Odoo log"
     },
-    "agent_done_s": 180,
-    "recovered_s": 182,
-    "resolved_notice_s": 218
+    "agent_done_s": 198,
+    "recovered_s": null,
+    "resolved_notice_s": 590
   },
   {
     "scenario": "blocking_query",
     "title": "Long-held lock blocks Odoo's queries",
     "expected_alert": "OdooHighLatency",
-    "started": "2026-10-12T16:48:01.386390+00:00",
-    "alert_fired_s": 93,
-    "agent_received_s": 100,
+    "started": "2026-10-14T20:12:59.167663+00:00",
+    "alert_fired_s": 99,
+    "agent_received_s": 99,
     "agent": {
       "scenario": "blocking_query",
-      "incident": "INC-20261012-164941-odoohighlatency-ed40",
+      "incident": "INC-20261014-201439-odoohighlatency-7e2f",
       "status": "fixed",
-      "model": "scripted-adaptive (no API key)",
-      "agent_seconds": 20.4,
+      "model": "openai_compat:gemini-3.1-flash-lite",
+      "agent_seconds": 25.4,
       "tools": [
+        "check_container_status:ok",
         "query_metrics:ok",
+        "read_logs:ok",
+        "query_database:ok",
         "query_database:ok",
         "query_database:ok",
         "kill_long_running_query:ok",
-        "query_metrics:ok"
+        "query_metrics:ok",
+        "query_database:ok"
       ],
       "actions": [
         {
           "tool": "kill_long_running_query",
           "args": {
-            "pid": 671
+            "pid": 1442
           },
           "approved": true
         }
       ],
-      "postmortem": "INC-20261012-164941-odoohighlatency-ed40.md",
-      "diagnosis": "## Diagnosis\nA long-held lock by 'nightly-report-job' (pid 671) blocked Odoo's queries. High confidence.\n## Proposed fix\nTerminate the blocking session.\n## Result\nLogin page responds again."
+      "postmortem": "INC-20261014-201439-odoohighlatency-7e2f.md",
+      "diagnosis": "## Diagnosis\nOdoo was experiencing high latency (and consequently, failing login probes) due to a database lock contention. Specifically, a process (PID 1442) held an `AccessExclusiveLock` on the `res_users` table, which prevented other sessions from even reading from it, leading to a bottleneck. Confidence: High.\n\n## Evidence\n*   **Metrics:** `probe_duration_seconds` for `odoo-login` was ~9.5s.\n*   **Database:** `pg_stat_activity` showed multiple active queries waiting on `relation` locks for `res_users`.\n*   **Lock Analysis:** `pg_locks` confirmed that PID 1442 held an `AccessExclusiveLock` "
     },
-    "agent_done_s": 121,
-    "recovered_s": 121,
-    "resolved_notice_s": 161
+    "agent_done_s": 126,
+    "recovered_s": 126,
+    "resolved_notice_s": 153
   },
   {
     "scenario": "python_error",
     "title": "Python error in the custom module",
     "expected_alert": "OdooDown",
-    "started": "2026-10-12T16:50:46.184716+00:00",
-    "alert_fired_s": 74,
+    "started": "2026-10-14T20:15:36.674673+00:00",
+    "alert_fired_s": 77,
     "agent_received_s": 86,
     "agent": {
       "scenario": "python_error",
-      "incident": "INC-20261012-165212-odoodown-0c00",
+      "incident": "INC-20261014-201704-odoodown-fca4",
       "status": "diagnosed",
-      "model": "scripted-adaptive (no API key)",
-      "agent_seconds": 0.4,
+      "model": "openai_compat:gemini-3.1-flash-lite",
+      "agent_seconds": 7.3,
       "tools": [
         "check_container_status:ok",
         "read_logs:ok"
       ],
       "actions": [],
-      "postmortem": "INC-20261012-165212-odoodown-0c00.md",
-      "diagnosis": "## Diagnosis\nOdoo is running but fails to load the registry because of a Python error in a custom module: `RuntimeError: scenario: simulated Python error in custom module`. High confidence (traceback in logs).\n## Evidence\n- odoo container state: running\n- Traceback in Odoo logs\n## Proposed fix\nnone: escalate. A restart cannot fix a code error; a developer must fix or revert the module change."
+      "postmortem": "INC-20261014-201704-odoodown-fca4.md",
+      "diagnosis": "## Diagnosis\nThe `odoo` service is failing to start because of a `RuntimeError` in the custom `carwash` module (`/mnt/extra-addons/carwash/models/service.py`). This exception occurs during module loading, causing the Odoo registry to fail to initialize, which directly results in HTTP 500 errors for all requests, including the `/web/health` check. Confidence: High.\n\n## Evidence\n- Odoo logs show a `RuntimeError: scenario: simulated Python error in custom module` originating from `carwash/models/service.py`.\n- This error leads to `CRITICAL: Couldn't load module carwash` and `ERROR: Failed to load"
     },
-    "agent_done_s": 87,
+    "agent_done_s": 96,
     "manual_recovery": true,
-    "recovered_s": 92,
-    "resolved_notice_s": 144
+    "recovered_s": 102,
+    "resolved_notice_s": 142
   }
 ]

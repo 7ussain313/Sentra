@@ -76,6 +76,20 @@ def test_domain_ok():
     assert d[0] == "|" and d[1] == ["state", "=", "done"]
 
 
+def test_domain_string_terms_are_parsed():
+    d = validate_domain(["scheduled_date >= 2026-10-16 00:00:00", "state = 'done'", "price > 10",
+                         "active = true"])
+    assert d == [["scheduled_date", ">=", "2026-10-16 00:00:00"], ["state", "=", "done"],
+                 ["price", ">", 10], ["active", "=", True]]
+
+
+@pytest.mark.parametrize("term", ["state; drop table x", "__import__('os') = 1", "state =~ x",
+                                  "id in [1, 2]", "just words"])
+def test_domain_bad_string_terms_rejected(term):
+    with pytest.raises(ToolError):
+        validate_domain([term])
+
+
 @pytest.mark.parametrize("domain", [
     [["state", "=~", "x"]],
     [["state; drop", "=", "x"]],

@@ -4,7 +4,7 @@
   "status": "diagnosed",
   "severity": "critical",
   "created_at": "2026-10-12T16:52:12.835079+00:00",
-  "updated_at": "2026-10-12T16:52:13.267176+00:00",
+  "updated_at": "2026-10-14T20:00:30.747179+00:00",
   "alert": {
     "status": "firing",
     "labels": {
@@ -71,11 +71,15 @@
       "stop_reason": "final",
       "status": "diagnosed",
       "steps": 3
+    },
+    {
+      "ts": "2026-10-14T20:00:30.695458+00:00",
+      "kind": "alert_resolved"
     }
   ],
   "diagnosis": "## Diagnosis\nOdoo is running but fails to load the registry because of a Python error in a custom module: `RuntimeError: scenario: simulated Python error in custom module`. High confidence (traceback in logs).\n## Evidence\n- odoo container state: running\n- Traceback in Odoo logs\n## Proposed fix\nnone: escalate. A restart cannot fix a code error; a developer must fix or revert the module change.",
   "proposed_action": null,
-  "resolved_at": null,
+  "resolved_at": "2026-10-14T19:57:37.518Z",
   "postmortem": "INC-20261012-165212-odoodown-0c00.md",
   "postmortem_narrative": "## Summary\nScenario run.\n## Root cause\nSee diagnosis.\n## Resolution\nSee actions taken.\n## Prevention\n- Review alert thresholds and runbooks."
 }
