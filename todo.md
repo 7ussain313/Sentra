@@ -383,13 +383,13 @@ For each scenario, record: alert fired, agent diagnosis, action taken, time to r
 
 ### Module: Demo
 
-- [ ] Record a 2–3 minute demo video:
+- [x] ~~Record a 2–3 minute demo video~~ (skipped by choice; `docs/DEMO.md` is a live walkthrough of the same steps instead):
   1. Show the Odoo car wash module.
   2. Break Odoo on purpose.
   3. Show the alert and the agent's diagnosis in the web UI.
   4. Approve the fix and show recovery.
   5. Ask the Business agent a question.
-- [ ] Add the video link to the README.
+- [x] ~~Add the video link to the README.~~ (not applicable; README points to screenshots and `docs/DEMO.md`)
 
 ### Module: Portfolio
 

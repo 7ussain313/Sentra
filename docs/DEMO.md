@@ -1,7 +1,7 @@
-# Demo script (2 to 3 minutes)
+# Demo walkthrough (about 3 minutes)
 
-Record the screen with OBS, the Windows Game Bar (Win+G) or any screen recorder. Use a 1080p window
-and keep each shot on a single screen.
+Run this live to see Sentra work end to end. It is written as a script, so it also works as a screen
+recording if you ever want one.
 
 ## Before recording
 
@@ -33,7 +33,3 @@ and keep each shot on a single screen.
   the agent's API user.
 - Honest limitation: a very large connection leak needs one approval per session (see README).
 
-## After recording
-
-- [ ] Upload the video (YouTube unlisted or GitHub release asset) and put the link at the top of
-      `README.md`, replacing the placeholder.

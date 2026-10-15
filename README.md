@@ -10,7 +10,8 @@ Grafana, and puts two AI agents next to it:
 - a **business agent** that answers questions like "which service is most popular this month?"
   from live Odoo data, read-only.
 
-> Demo video: _link to be added after recording (script in [`docs/DEMO.md`](docs/DEMO.md))_
+> No demo video. See the [screenshots](#screenshots) below, and [`docs/DEMO.md`](docs/DEMO.md) for a
+> step-by-step walkthrough you can run yourself in about three minutes.
 
 ## The problem
 
